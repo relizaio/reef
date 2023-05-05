@@ -1,0 +1,8 @@
+node_modules
+**/*.tfstate.backup
+**/*.tfstate
+**/*.lock.hcl
+**/.terraform/**
+**/tf_script/scratch/*sshkey*
+tf_space/**
+!tf_space/README.md

@@ -1,0 +1,4 @@
+export default {
+    AWS_K3S_PROVIDER: "AWS_K3S",
+    AZURE_K3S_PROVIDER: "AZURE_K3S"
+}
