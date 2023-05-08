@@ -1,3 +1,6 @@
+import fs from 'node:fs/promises'
+import path from 'path'
+
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
         setTimeout((() => {
@@ -13,7 +16,22 @@ function uuidv4() {
     })
 }
 
+async function copyDir(src: string, dest: string) {
+    await fs.mkdir(dest, { recursive: true })
+    let entries = await fs.readdir(src, { withFileTypes: true })
+
+    for (let entry of entries) {
+        let srcPath = path.join(src, entry.name);
+        let destPath = path.join(dest, entry.name);
+
+        entry.isDirectory() ?
+            await copyDir(srcPath, destPath) :
+            await fs.copyFile(srcPath, destPath);
+    }
+}
+
 export default {
+    copyDir,
     sleep: sleepForTime,
-    uuidv4: uuidv4
+    uuidv4
 }
