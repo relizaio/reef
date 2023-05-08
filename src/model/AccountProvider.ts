@@ -9,6 +9,7 @@ class AzureAccount extends AccountProvider {
     clientId: string = '' // ARM_CLIENT_ID or app id
     clientSecret: string  = '' // ARM_CLIENT_SECRET
     tenantId: string = '' // ARM_TENANT_ID
+    resourceGroupName: string = '' // optional, required if scoped to resource group
 }
 
 export default AzureAccount
