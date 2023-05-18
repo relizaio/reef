@@ -5,7 +5,11 @@ const typeDefs = gql`
         hello: String
     },
     type Mutation {
-        createSilo: Boolean
+        createSilo(params: SiloParams): Boolean
+    },
+    input SiloParams {
+        type: String
+        group: String
     }
 `
 

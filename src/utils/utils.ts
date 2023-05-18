@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'path'
+import childProcess from 'child_process'
 
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
@@ -30,8 +31,38 @@ async function copyDir(src: string, dest: string) {
     }
 }
 
+function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> { // timeout = in ms
+    return new Promise((resolve, reject) => {
+        let options: any = {}
+        if (timeout) options.timeout = timeout
+        const child = childProcess.spawn(cmd, args, options)
+        let resData = ""
+        child.stdout.on('data', (data)=> {
+            resData += data
+        })
+      
+        child.stderr.on('data', (data) => {
+            console.error(`shell command error: ${data}`)
+        })
+  
+        child.on('close', (code) => {
+            if (code !== 0) console.log(`shell process exited with code ${code}`)
+            if (code === 0) {
+                if (resData) {
+                    resData = resData.replace(/\n$/, "")
+                }
+                resolve(resData)
+            } else {
+                console.error(resData)
+                reject(resData)
+            }
+        })
+    })
+}
+
 export default {
     copyDir,
+    shellExec,
     sleep: sleepForTime,
     uuidv4
 }

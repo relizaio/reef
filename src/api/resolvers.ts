@@ -1,15 +1,18 @@
-import testAa from '../../local_tests/TestAccounts'
 import silo from '../services/silo'
+
+type SiloParams = {
+    type: string,
+    group: string
+}
 
 const resolvers = {
     Query: {
         hello: () => 'world'
     },
     Mutation: {
-        createSilo: () => {
-            console.log('accessed create silo')
-            console.log(testAa)
-            silo.createSilo()
+        createSilo: (parent: any, params: any) => {
+            const siloParams : SiloParams = params.params
+            silo.createSilo(siloParams)
             return true
         }
     }
@@ -18,3 +21,5 @@ const resolvers = {
 export default {
     resolvers: resolvers
 }
+
+export type { SiloParams }
