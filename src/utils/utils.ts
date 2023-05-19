@@ -60,8 +60,30 @@ function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> 
     })
 }
 
+function parseTfOutput(tfOutput: string) {
+    const tfOutArray = tfOutput.split('Outputs:')
+    const tfOutMap: any = {}
+    if (tfOutArray.length > 1) {
+        const outputsStr = tfOutArray[tfOutArray.length - 1]
+        const outStrings = outputsStr.split(/(?:\r\n|\r|\n)/g);
+        outStrings.forEach(os => {
+            if (os && os.length > 1) {
+                const kvArr = os.split(' = "')
+                if (kvArr.length > 1) {
+                    tfOutMap[kvArr[0]] = kvArr[1].replace(/"$/, '')
+                }
+            }
+        })
+        console.log(outputsStr)
+    } else {
+        console.log('No outputs in tf parse')
+    }
+    return tfOutMap
+}
+
 export default {
     copyDir,
+    parseTfOutput,
     shellExec,
     sleep: sleepForTime,
     uuidv4
