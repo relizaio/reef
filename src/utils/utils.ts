@@ -31,6 +31,15 @@ async function copyDir(src: string, dest: string) {
     }
 }
 
+async function deleteDir(dir: string) {
+    try {
+        await fs.rm(dir, {recursive: true, force: true})
+        console.log(`directory ${dir} deleted`)
+    } catch (err: any) {
+        console.error(err)
+    }
+}
+
 function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> { // timeout = in ms
     return new Promise((resolve, reject) => {
         let options: any = {}
@@ -83,6 +92,7 @@ function parseTfOutput(tfOutput: string) {
 
 export default {
     copyDir,
+    deleteDir,
     parseTfOutput,
     shellExec,
     sleep: sleepForTime,

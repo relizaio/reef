@@ -14,6 +14,11 @@ const resolvers = {
             const siloParams : SiloParams = params.params
             silo.createSilo(siloParams)
             return true
+        },
+        destroySilo: (parent: any, params: any) => {
+            const siloId : string = params.siloId
+            silo.destroySilo(siloId)
+            return true
         }
     }
 }

@@ -3,6 +3,7 @@ import { type SiloParams } from '../api/resolvers'
 import testAa from '../../local_tests/TestAccounts'
 
 const createSilo = async (params: SiloParams) => {
+    let startTime = (new Date()).getTime()
     const siloId = 'silo_' + utils.uuidv4()
     await utils.copyDir('./local_tests/azure_k3s_vnet_silo', "./tf_space/" + siloId)
     if (params.type === "azure") {
@@ -18,8 +19,22 @@ const createSilo = async (params: SiloParams) => {
     } else {
         console.warn(`unsupported silo type = ${params.type}`)
     }
+    const allDoneTime = (new Date()).getTime()
+    console.log("After TF silo create time = " + (allDoneTime - startTime))
+}
+
+const destroySilo = async (siloId: string) => {
+    const resourceGroup = 'Reliza-Local-Tests' // TODO: should be stored with silo props
+    let startTime = (new Date()).getTime()
+    const siloDestroyCmd = 
+        `cd tf_space/${siloId} && terraform destroy -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${resourceGroup}"`
+    await utils.shellExec('sh', ['-c', siloDestroyCmd])
+    await utils.deleteDir(`tf_space/${siloId}`)
+    const allDoneTime = (new Date()).getTime()
+    console.log("After TF silo destroy time = " + (allDoneTime - startTime))
 }
 
 export default {
-    createSilo
+    createSilo,
+    destroySilo
 }
