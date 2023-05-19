@@ -7,4 +7,5 @@ test('parse outputs from terraform output', (t) => {
     const tfOutMap = utils.parseTfOutput(siloTfOutput)
     console.warn('test')
     assert.strictEqual(tfOutMap['security_group_id'], '/subscriptions/ed366fc1-5ef7-4cd3-8822-dd686d955703/resourceGroups/Reliza-Local-Tests/providers/Microsoft.Network/networkSecurityGroups/k3s-security-group-silo_9cf2ae4f-cdd0-40a6-a714-882d7a082b09');
+    assert.strictEqual(tfOutMap['subnet_id'], '/subscriptions/ed366fc1-5ef7-4cd3-8822-dd686d955703/resourceGroups/Reliza-Local-Tests/providers/Microsoft.Network/virtualNetworks/k3s-vnet-silo_9cf2ae4f-cdd0-40a6-a714-882d7a082b09/subnets/k3s-subnet-silo_9cf2ae4f-cdd0-40a6-a714-882d7a082b09');
 })

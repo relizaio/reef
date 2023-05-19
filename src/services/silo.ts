@@ -13,7 +13,8 @@ const createSilo = async (params: SiloParams) => {
             `&& terraform plan -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}" `+
             `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}"`
         let initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-        console.log(initSiloData)
+        const parsedSiloOut = utils.parseTfOutput(initSiloData)
+        console.log(parsedSiloOut)
     } else {
         console.warn(`unsupported silo type = ${params.type}`)
     }
