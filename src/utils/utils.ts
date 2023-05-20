@@ -74,7 +74,7 @@ function parseTfOutput(tfOutput: string) {
     const tfOutMap: any = {}
     if (tfOutArray.length > 1) {
         const outputsStr = tfOutArray[tfOutArray.length - 1]
-        const outStrings = outputsStr.split(/(?:\r\n|\r|\n)/g);
+        const outStrings = outputsStr.split(/(?:\r\n|\r|\n|\x1B\[\dm)/g);
         outStrings.forEach(os => {
             if (os && os.length > 1) {
                 const kvArr = os.split(' = "')
