@@ -1,6 +1,7 @@
 import utils from '../utils/utils'
 import { type SiloParams } from '../api/resolvers'
 import testAa from '../../local_tests/TestAccounts'
+import { Silo, SiloProperty } from '../model/Silo'
 
 const createSilo = async (params: SiloParams) => {
     let startTime = (new Date()).getTime()
@@ -15,7 +16,19 @@ const createSilo = async (params: SiloParams) => {
             `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}"`
         let initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        console.log(parsedSiloOut)
+        const outSiloProps : SiloProperty[] = []
+        Object.keys(parsedSiloOut).forEach((key: string) => {
+            const sp : SiloProperty = {
+                key,
+                value: parsedSiloOut[key]
+            }
+            outSiloProps.push(sp)
+        })
+        const outSilo : Silo = {
+            id: siloId,
+            properties: outSiloProps
+        }
+        console.log(outSilo)
     } else {
         console.warn(`unsupported silo type = ${params.type}`)
     }
