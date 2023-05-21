@@ -2,6 +2,15 @@ import utils from '../utils/utils'
 import { type SiloParams } from '../api/resolvers'
 import testAa from '../../local_tests/TestAccounts'
 import { Silo, SiloProperty } from '../model/Silo'
+import { runQuery, schema } from '../utils/pgUtils'
+
+const saveToDb = async (silo: Silo) => {
+    const siloUuidForDb = silo.id.replace('silo_', '')
+    const queryText = `INSERT INTO ${schema}.silos (uuid, properties) values ($1, $2) RETURNING *`
+    const queryParams = [siloUuidForDb, JSON.stringify(silo.properties)]
+    let queryRes = await runQuery(queryText, queryParams)
+    return queryRes.rows[0]
+}
 
 const createSilo = async (params: SiloParams) => {
     let startTime = (new Date()).getTime()
@@ -16,7 +25,7 @@ const createSilo = async (params: SiloParams) => {
             `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}"`
         let initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : SiloProperty[] = []
+        const outSiloProps : SiloProperty[] = [{key: 'group', value: params.group}]
         Object.keys(parsedSiloOut).forEach((key: string) => {
             const sp : SiloProperty = {
                 key,
@@ -28,6 +37,7 @@ const createSilo = async (params: SiloParams) => {
             id: siloId,
             properties: outSiloProps
         }
+        saveToDb(outSilo)
         console.log(outSilo)
     } else {
         console.warn(`unsupported silo type = ${params.type}`)
