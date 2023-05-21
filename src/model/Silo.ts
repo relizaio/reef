@@ -1,5 +1,8 @@
+import constants from '../utils/constants'
+
 class Silo {
     id : string = ''
+    status: string = constants.STATUS_ACTIVE
     properties : SiloProperty[] = []
 }
 
