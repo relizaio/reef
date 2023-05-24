@@ -2,12 +2,16 @@ import silo from '../services/silo'
 
 type SiloParams = {
     type: string,
-    group: string
+    resource_group_name: string
 }
 
 const resolvers = {
     Query: {
-        hello: () => 'world'
+        hello: () => 'world',
+        getSilo: (parent: any, params: any) => {
+            const siloId : string = params.siloId
+            return silo.getSilo(siloId)
+        }
     },
     Mutation: {
         createSilo: (parent: any, params: any) => {

@@ -21,6 +21,19 @@ const archiveSiloInDb = async (siloId: string) => {
     return queryRes.rows[0]
 }
 
+const getSilo = async (siloId: string) : Promise<Silo> => {
+    const siloUuidForDb = siloId.replace('silo_', '')
+    const queryText = `SELECT * FROM ${schema}.silos where uuid = $1`
+    const queryParams = [siloUuidForDb]
+    const queryRes = await runQuery(queryText, queryParams)
+    const silo : Silo = {
+        id: queryRes.rows[0].uuid,
+        status: queryRes.rows[0].status,
+        properties: queryRes.rows[0].properties
+    }
+    return silo
+}
+
 const createSilo = async (params: SiloParams) => {
     let startTime = (new Date()).getTime()
     const siloId = 'silo_' + utils.uuidv4()
@@ -30,12 +43,13 @@ const createSilo = async (params: SiloParams) => {
             `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
             `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
             `cd tf_space/${siloId} && terraform init ` +
-            `&& terraform plan -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}" `+
-            `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.group}"`
+            `&& terraform plan -var="silo_identifier=${siloId}" -var="resource_group_name=${params.resource_group_name}" `+
+            `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.resource_group_name}"`
         let initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
         const outSiloProps : SiloProperty[] = [
-            {key: 'group', value: params.group}
+            {key: 'resource_group_name', value: params.resource_group_name},
+            {key: 'type', value: params.type}
         ]
         Object.keys(parsedSiloOut).forEach((key: string) => {
             const sp : SiloProperty = {
@@ -72,5 +86,6 @@ const destroySilo = async (siloId: string) => {
 
 export default {
     createSilo,
-    destroySilo
+    destroySilo,
+    getSilo
 }
