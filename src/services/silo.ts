@@ -39,13 +39,19 @@ const createSilo = async (params: SiloParams) => {
     const siloId = 'silo_' + utils.uuidv4()
     await utils.copyDir('./local_tests/azure_k3s_vnet_silo', "./tf_space/" + siloId)
     if (params.type === "azure") {
+        const siloTfVarsObj = {
+            silo_identifier: siloId,
+            resource_group_name: params.resource_group_name
+        }
+        const siloTfVarsFile = `./tf_space/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+        utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+        console.log(`Creating Azure Silo ${siloId}...`)
         const initializeSiloCmd =
             `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
             `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
-            `cd tf_space/${siloId} && terraform init ` +
-            `&& terraform plan -var="silo_identifier=${siloId}" -var="resource_group_name=${params.resource_group_name}" `+
-            `&& terraform apply -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${params.resource_group_name}"`
-        let initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+            `cd tf_space/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+        const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+        console.log(initSiloData)
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
         const outSiloProps : SiloProperty[] = [
             {key: 'resource_group_name', value: params.resource_group_name},
@@ -73,10 +79,8 @@ const createSilo = async (params: SiloParams) => {
 }
 
 const destroySilo = async (siloId: string) => {
-    const resourceGroup = 'Reliza-Local-Tests' // TODO: should be stored with silo props
     let startTime = (new Date()).getTime()
-    const siloDestroyCmd = 
-        `cd tf_space/${siloId} && terraform destroy -auto-approve -var="silo_identifier=${siloId}" -var="resource_group_name=${resourceGroup}"`
+    const siloDestroyCmd = `cd tf_space/${siloId} && terraform destroy -auto-approve`
     await utils.shellExec('sh', ['-c', siloDestroyCmd])
     await utils.deleteDir(`tf_space/${siloId}`)
     archiveSiloInDb(siloId)

@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon --ignore ./tf_space/ src/index.ts",
     "start": "ts-node src/index.ts",
     "test": "node --loader tsx --test tests/test*.ts"
   },

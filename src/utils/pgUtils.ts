@@ -14,6 +14,8 @@ export function getPool() {
     return pool
 }
 
+// TODO throw error if can't connect to postgres on startup - do basic select query
+
 export async function runQuery (query: string, params: string[]) : Promise<any> {
     const client = await pool.connect()
     try {

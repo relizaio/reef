@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import { writeFile } from 'node:fs'
 import path from 'path'
 import childProcess from 'child_process'
 
@@ -38,6 +39,16 @@ async function deleteDir(dir: string) {
     } catch (err: any) {
         console.error(err)
     }
+}
+
+async function saveJsonToFile (path: string, jsonObj: any) {
+    const fileData = JSON.stringify(jsonObj)
+    writeFile(path, fileData, (err: any) => {
+        if (err) {
+            console.error(err)
+            throw err
+        }
+    })
 }
 
 function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> { // timeout = in ms
@@ -94,6 +105,7 @@ export default {
     copyDir,
     deleteDir,
     parseTfOutput,
+    saveJsonToFile,
     shellExec,
     sleep: sleepForTime,
     uuidv4
