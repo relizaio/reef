@@ -1,4 +1,5 @@
 import silo from '../services/silo'
+import instance from '../services/instance'
 
 type SiloParams = {
     type: string,
@@ -23,7 +24,12 @@ const resolvers = {
             const siloId : string = params.siloId
             silo.destroySilo(siloId)
             return true
-        }
+        },
+        createInstance: (parent: any, params: any) => {
+            const siloId : string = params.siloId
+            instance.createInstance(siloId)
+            return true
+        },
     }
 }
 
