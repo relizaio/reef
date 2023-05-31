@@ -1,7 +1,8 @@
 import utils from '../utils/utils'
 import { type SiloParams } from '../api/resolvers'
 import testAa from '../../local_tests/TestAccounts'
-import { Silo, SiloProperty } from '../model/Silo'
+import { Silo } from '../model/Silo'
+import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
 
@@ -15,7 +16,7 @@ const saveToDb = async (silo: Silo) => {
 
 const archiveSiloInDb = async (siloId: string) => {
     const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
-    const queryText = `UPDATE ${schema}.silos SET status = $1 where uuid = $2`
+    const queryText = `UPDATE ${schema}.silos SET status = $1, last_updated_date = now() where uuid = $2`
     const queryParams = [constants.STATUS_ARCHIVED, siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
@@ -53,12 +54,12 @@ const createSilo = async (params: SiloParams) => {
         const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         console.log(initSiloData)
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : SiloProperty[] = [
+        const outSiloProps : Property[] = [
             {key: 'resource_group_name', value: params.resource_group_name},
             {key: 'type', value: params.type}
         ]
         Object.keys(parsedSiloOut).forEach((key: string) => {
-            const sp : SiloProperty = {
+            const sp : Property = {
                 key,
                 value: parsedSiloOut[key]
             }
