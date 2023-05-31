@@ -8,7 +8,8 @@ const typeDefs = gql`
     type Mutation {
         createSilo(params: SiloParams): Boolean,
         destroySilo(siloId: ID!): Boolean,
-        createInstance(siloId: ID!): Boolean
+        createInstance(siloId: ID!): Boolean,
+        destroyInstance(instanceId: ID!): Boolean
     },
     input SiloParams {
         type: String

@@ -3,5 +3,7 @@ export default {
     AZURE_K3S_PROVIDER: "AZURE_K3S",
     STATUS_ACTIVE: "ACTIVE",
     STATUS_ARCHIVED: "ARCHIVED",
-    TF_DEFAULT_TFVARS_FILE: "terraform.tfvars.json"
+    TF_DEFAULT_TFVARS_FILE: "terraform.tfvars.json",
+    SILO_PREFIX: "silo-",
+    INSTANCE_PREFIX: "instance-"
 }

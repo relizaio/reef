@@ -30,6 +30,11 @@ const resolvers = {
             instance.createInstance(siloId)
             return true
         },
+        destroyInstance: (parent: any, params: any) => {
+            const instanceId : string = params.instanceId
+            instance.destroyInstance(instanceId)
+            return true
+        },
     }
 }
 

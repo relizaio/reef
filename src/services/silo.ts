@@ -6,7 +6,7 @@ import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
 
 const saveToDb = async (silo: Silo) => {
-    const siloUuidForDb = silo.id.replace('silo_', '')
+    const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
     const queryText = `INSERT INTO ${schema}.silos (uuid, status, properties) values ($1, $2, $3) RETURNING *`
     const queryParams = [siloUuidForDb, silo.status, JSON.stringify(silo.properties)]
     const queryRes = await runQuery(queryText, queryParams)
@@ -14,7 +14,7 @@ const saveToDb = async (silo: Silo) => {
 }
 
 const archiveSiloInDb = async (siloId: string) => {
-    const siloUuidForDb = siloId.replace('silo_', '')
+    const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     const queryText = `UPDATE ${schema}.silos SET status = $1 where uuid = $2`
     const queryParams = [constants.STATUS_ARCHIVED, siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
@@ -22,7 +22,7 @@ const archiveSiloInDb = async (siloId: string) => {
 }
 
 const getSilo = async (siloId: string) : Promise<Silo> => {
-    const siloUuidForDb = siloId.replace('silo_', '')
+    const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     const queryText = `SELECT * FROM ${schema}.silos where uuid = $1`
     const queryParams = [siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
@@ -36,7 +36,7 @@ const getSilo = async (siloId: string) : Promise<Silo> => {
 
 const createSilo = async (params: SiloParams) => {
     let startTime = (new Date()).getTime()
-    const siloId = 'silo_' + utils.uuidv4()
+    const siloId = constants.SILO_PREFIX + utils.uuidv4()
     await utils.copyDir('./local_tests/azure_k3s_vnet_silo', "./tf_space/" + siloId)
     if (params.type === "azure") {
         const siloTfVarsObj = {
@@ -80,6 +80,7 @@ const createSilo = async (params: SiloParams) => {
 
 const destroySilo = async (siloId: string) => {
     let startTime = (new Date()).getTime()
+    console.log(`Destroying TF Silo ${siloId}...`)
     const siloDestroyCmd = `cd tf_space/${siloId} && terraform destroy -auto-approve`
     await utils.shellExec('sh', ['-c', siloDestroyCmd])
     await utils.deleteDir(`tf_space/${siloId}`)
