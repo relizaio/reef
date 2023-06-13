@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import { writeFile } from 'node:fs'
 import path from 'path'
 import childProcess from 'child_process'
+import constants from './constants'
 
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
@@ -101,9 +102,30 @@ function parseTfOutput(tfOutput: string) {
     return tfOutMap
 }
 
+/**
+ * Returns directory where git is checked out
+ * @param gitUri 
+ * @param gitPath 
+ */
+async function gitCheckout (gitUri: string, gitPath: string, gitBranch: string): Promise<string> {
+    const gitCheckoutId = constants.GIT_PREFIX + uuidv4()
+    const checkoutPath = `./${constants.TF_SPACE}/${gitCheckoutId}`
+    await fs.mkdir(checkoutPath)
+    let checkoutCmd = ''
+    if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git pull --depth=1 origin ${gitBranch}`
+    } else {
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${gitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitBranch}`
+    }
+    const gitCheckoutData = await shellExec('sh', ['-c', checkoutCmd], 15*60*1000)
+    console.log(gitCheckoutData)
+    return checkoutPath
+}
+
 export default {
     copyDir,
     deleteDir,
+    gitCheckout,
     parseTfOutput,
     saveJsonToFile,
     shellExec,

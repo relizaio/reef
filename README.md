@@ -21,3 +21,9 @@ docker run --rm -v ./migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql:/
 ```
 docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=ref -schemas='ref' migrate
 ```
+
+### Run test sample:
+
+```
+node --loader tsx --test tests/test2.ts
+```
