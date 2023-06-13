@@ -29,7 +29,10 @@ const createInstance = async (siloId: string) => {
     const siloEntity = await silo.getSilo(siloId)
     const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
     // TODO: instance template should be driven by silo props; possibly allow several instance templates per silo
-    await utils.copyDir('./local_tests/azure_k3s_instance', `./${constants.TF_SPACE}/` + instanceId)
+    
+    const instSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/instances/azure_k3s_instance', 'main')
+    await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
+    await utils.deleteDir(instSourcePaths.checkoutPath)
 
     const instanceTfVarsFile = `./${constants.TF_SPACE}/${instanceId}/${constants.TF_DEFAULT_TFVARS_FILE}`
 
