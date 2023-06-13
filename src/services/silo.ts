@@ -5,6 +5,7 @@ import { Silo } from '../model/Silo'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
+import { type GitCheckoutPaths } from '../utils/utils'
 
 const saveToDb = async (silo: Silo) => {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -35,10 +36,12 @@ const getSilo = async (siloId: string) : Promise<Silo> => {
     return silo
 }
 
-const createSilo = async (params: SiloParams) => {
+async function createSilo (params: SiloParams) {
     let startTime = (new Date()).getTime()
     const siloId = constants.SILO_PREFIX + utils.uuidv4()
-    await utils.copyDir('./local_tests/azure_k3s_vnet_silo', `./${constants.TF_SPACE}/${siloId}`)
+    const siloSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/silos/azure_k3s_vnet_silo', 'main')
+    await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
+    await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (params.type === "azure") {
         const siloTfVarsObj = {
             silo_identifier: siloId,

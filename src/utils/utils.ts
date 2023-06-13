@@ -107,20 +107,32 @@ function parseTfOutput(tfOutput: string) {
  * @param gitUri 
  * @param gitPath 
  */
-async function gitCheckout (gitUri: string, gitPath: string, gitBranch: string): Promise<string> {
+async function gitCheckout (gitUri: string, gitPath: string, gitBranch: string): Promise<GitCheckoutPaths> {
     const gitCheckoutId = constants.GIT_PREFIX + uuidv4()
     const checkoutPath = `./${constants.TF_SPACE}/${gitCheckoutId}`
+    let retPath = checkoutPath
     await fs.mkdir(checkoutPath)
     let checkoutCmd = ''
     if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
         checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git pull --depth=1 origin ${gitBranch}`
     } else {
-        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${gitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitBranch}`
+        const cleanedGitPath = gitPath.replace(/^\.\//, '').replace(/^\//, '')
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitBranch}`
+        retPath = checkoutPath + '/' + cleanedGitPath
     }
     const gitCheckoutData = await shellExec('sh', ['-c', checkoutCmd], 15*60*1000)
-    console.log(gitCheckoutData)
-    return checkoutPath
+    const checkoutPaths: GitCheckoutPaths = {
+        checkoutPath: checkoutPath,
+        fullTemplatePath: retPath
+    }
+    return checkoutPaths
 }
+
+type GitCheckoutPaths = {
+    checkoutPath: string,
+    fullTemplatePath: string
+}
+
 
 export default {
     copyDir,
@@ -132,3 +144,5 @@ export default {
     sleep: sleepForTime,
     uuidv4
 }
+
+export type { GitCheckoutPaths }
