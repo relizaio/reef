@@ -24,7 +24,10 @@ async function createTemplate (templateInput: TemplateInput) {
 
     // parse supported user variables from actual template
     const checkoutPaths = await utils.gitCheckout(templateInput.repoUrl, templateInput.repoPath, templateInput.repoPointer)
-    utils.parseTfDirectoryForVariables(checkoutPaths.fullTemplatePath)
+    const tfVars = await utils.parseTfDirectoryForVariables(checkoutPaths.fullTemplatePath)
+    await utils.deleteDir(checkoutPaths.checkoutPath)
+    template.record_data.userVariables = tfVars
+    saveToDb(template)
 }
 
 export default {

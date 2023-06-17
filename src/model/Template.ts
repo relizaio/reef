@@ -6,7 +6,7 @@ class TemplateData {
     repoPath: string = ''
     repoPointer: string = '' // this can be git branch, git tag, git hash
     providers: ProviderType[] = []
-    userVariables: string[] = [] // variables configured by the user via user input
+    userVariables: TfVarDefinition[] = [] // variables that must be configured by the user via user input
     // authAccount TBD TODO
 }
 
