@@ -1,10 +1,10 @@
-FROM node:18.5-alpine3.16 as builder
+FROM node:20-alpine3.17 as builder
 ADD https://releases.hashicorp.com/terraform/1.1.9/terraform_1.1.9_linux_amd64.zip /tmp/
 COPY terraform_1.1.9_SHA256SUMS /tmp/
 RUN cd /tmp && sha256sum -c terraform_1.1.9_SHA256SUMS
 RUN cd /tmp && unzip terraform_1.1.9_linux_amd64.zip
 
-FROM node:18.5-alpine3.16 as package
+FROM node:20-alpine3.17 as package
 ARG CI_ENV=noci
 ARG GIT_COMMIT=git_commit_undefined
 ARG GIT_BRANCH=git_branch_undefined
