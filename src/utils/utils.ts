@@ -1,5 +1,5 @@
-import fs from 'node:fs/promises'
-import { writeFile } from 'node:fs'
+import * as fsp from 'node:fs/promises'
+import * as fs from 'node:fs'
 import path from 'path'
 import childProcess from 'child_process'
 import constants from './constants'
@@ -20,8 +20,8 @@ function uuidv4() {
 }
 
 async function copyDir(src: string, dest: string) {
-    await fs.mkdir(dest, { recursive: true })
-    let entries = await fs.readdir(src, { withFileTypes: true })
+    await fsp.mkdir(dest, { recursive: true })
+    let entries = await fsp.readdir(src, { withFileTypes: true })
 
     for (let entry of entries) {
         let srcPath = path.join(src, entry.name);
@@ -29,13 +29,13 @@ async function copyDir(src: string, dest: string) {
 
         entry.isDirectory() ?
             await copyDir(srcPath, destPath) :
-            await fs.copyFile(srcPath, destPath);
+            await fsp.copyFile(srcPath, destPath);
     }
 }
 
 async function deleteDir(dir: string) {
     try {
-        await fs.rm(dir, {recursive: true, force: true})
+        await fsp.rm(dir, {recursive: true, force: true})
         console.log(`directory ${dir} deleted`)
     } catch (err: any) {
         console.error(err)
@@ -44,7 +44,7 @@ async function deleteDir(dir: string) {
 
 async function saveJsonToFile (path: string, jsonObj: any) {
     const fileData = JSON.stringify(jsonObj)
-    writeFile(path, fileData, (err: any) => {
+    fs.writeFile(path, fileData, (err: any) => {
         if (err) {
             console.error(err)
             throw err
@@ -102,22 +102,32 @@ function parseTfOutput(tfOutput: string) {
     return tfOutMap
 }
 
+async function parseTfDirectoryForVariables (path: string) {
+    const filesToConsider = await fsp.readdir(path, {withFileTypes: true}) // TODO implement {recursive: true} option when available
+    filesToConsider.forEach((f: fs.Dirent) => {
+        if (f.isFile()) {
+            console.log(f.name)
+        }
+    })
+}
+
 /**
  * Returns directory where git is checked out
- * @param gitUri 
- * @param gitPath 
+ * @param gitUri
+ * @param gitPath
+ * @param gitPointer - this can be a branch, a tag or a specific commit hash to pull 
  */
-async function gitCheckout (gitUri: string, gitPath: string, gitBranch: string): Promise<GitCheckoutPaths> {
+async function gitCheckout (gitUri: string, gitPath: string, gitPointer: string): Promise<GitCheckoutPaths> {
     const gitCheckoutId = constants.GIT_PREFIX + uuidv4()
     const checkoutPath = `./${constants.TF_SPACE}/${gitCheckoutId}`
     let retPath = checkoutPath
-    await fs.mkdir(checkoutPath)
+    await fsp.mkdir(checkoutPath)
     let checkoutCmd = ''
     if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
-        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git pull --depth=1 origin ${gitBranch}`
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git pull --depth=1 origin ${gitPointer}`
     } else {
         const cleanedGitPath = gitPath.replace(/^\.\//, '').replace(/^\//, '')
-        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitBranch}`
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitPointer}`
         retPath = checkoutPath + '/' + cleanedGitPath
     }
     const gitCheckoutData = await shellExec('sh', ['-c', checkoutCmd], 15*60*1000)
@@ -138,6 +148,7 @@ export default {
     copyDir,
     deleteDir,
     gitCheckout,
+    parseTfDirectoryForVariables,
     parseTfOutput,
     saveJsonToFile,
     shellExec,

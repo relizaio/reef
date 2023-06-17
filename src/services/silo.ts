@@ -1,11 +1,9 @@
 import utils from '../utils/utils'
-import { type SiloParams } from '../api/resolvers'
 import testAa from '../../local_tests/TestAccounts'
 import { Silo } from '../model/Silo'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
-import { type GitCheckoutPaths } from '../utils/utils'
 
 const saveToDb = async (silo: Silo) => {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -36,50 +34,50 @@ const getSilo = async (siloId: string) : Promise<Silo> => {
     return silo
 }
 
-async function createSilo (params: SiloParams) {
-    let startTime = (new Date()).getTime()
-    const siloId = constants.SILO_PREFIX + utils.uuidv4()
-    const siloSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/silos/azure_k3s_vnet_silo', 'main')
-    await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
-    await utils.deleteDir(siloSourcePaths.checkoutPath)
-    if (params.type === "azure") {
-        const siloTfVarsObj = {
-            silo_identifier: siloId,
-            resource_group_name: params.resource_group_name
-        }
-        const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
-        utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-        console.log(`Creating Azure Silo ${siloId}...`)
-        const initializeSiloCmd =
-            `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
-            `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
-            `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
-        const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-        console.log(initSiloData)
-        const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : Property[] = [
-            {key: 'resource_group_name', value: params.resource_group_name},
-            {key: 'type', value: params.type}
-        ]
-        Object.keys(parsedSiloOut).forEach((key: string) => {
-            const sp : Property = {
-                key,
-                value: parsedSiloOut[key]
-            }
-            outSiloProps.push(sp)
-        })
-        const outSilo : Silo = {
-            id: siloId,
-            status: constants.STATUS_ACTIVE,
-            properties: outSiloProps
-        }
-        saveToDb(outSilo)
-        console.log(outSilo)
-    } else {
-        console.warn(`unsupported silo type = ${params.type}`)
-    }
-    const allDoneTime = (new Date()).getTime()
-    console.log("After TF silo create time = " + (allDoneTime - startTime))
+async function createSilo (templateId: string, userVariables: any) {
+    // let startTime = (new Date()).getTime()
+    // const siloId = constants.SILO_PREFIX + utils.uuidv4()
+    // const siloSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/silos/azure_k3s_vnet_silo', 'main')
+    // await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
+    // await utils.deleteDir(siloSourcePaths.checkoutPath)
+    // if (params.type === "azure") {
+    //     const siloTfVarsObj = {
+    //         silo_identifier: siloId,
+    //         resource_group_name: params.resource_group_name
+    //     }
+    //     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+    //     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+    //     console.log(`Creating Azure Silo ${siloId}...`)
+    //     const initializeSiloCmd =
+    //         `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
+    //         `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
+    //         `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+    //     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+    //     console.log(initSiloData)
+    //     const parsedSiloOut = utils.parseTfOutput(initSiloData)
+    //     const outSiloProps : Property[] = [
+    //         {key: 'resource_group_name', value: params.resource_group_name},
+    //         {key: 'type', value: params.type}
+    //     ]
+    //     Object.keys(parsedSiloOut).forEach((key: string) => {
+    //         const sp : Property = {
+    //             key,
+    //             value: parsedSiloOut[key]
+    //         }
+    //         outSiloProps.push(sp)
+    //     })
+    //     const outSilo : Silo = {
+    //         id: siloId,
+    //         status: constants.STATUS_ACTIVE,
+    //         properties: outSiloProps
+    //     }
+    //     saveToDb(outSilo)
+    //     console.log(outSilo)
+    // } else {
+    //     console.warn(`unsupported silo type = ${params.type}`)
+    // }
+    // const allDoneTime = (new Date()).getTime()
+    // console.log("After TF silo create time = " + (allDoneTime - startTime))
 }
 
 const destroySilo = async (siloId: string) => {

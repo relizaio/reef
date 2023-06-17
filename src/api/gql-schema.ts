@@ -6,14 +6,29 @@ const typeDefs = gql`
         getSilo(siloId: ID!): Silo
     },
     type Mutation {
-        createSilo(params: SiloParams): Boolean,
+        createSilo(templateId: ID!, userVariables: String): Silo,
         destroySilo(siloId: ID!): Boolean,
         createInstance(siloId: ID!): Boolean,
-        destroyInstance(instanceId: ID!): Boolean
+        destroyInstance(instanceId: ID!): Boolean,
+        createTemplate(templateInput: TemplateInput!): Template
     },
-    input SiloParams {
-        type: String
-        resource_group_name: String
+    enum ProviderType {
+        AZURE
+        AWS
+        GCP
+        HETZNER
+        OVH
+    },
+    enum TemplateType {
+        SILO
+        INSTANCE
+    },
+    input TemplateInput {
+        type: TemplateType!
+        repoUrl: String
+        repoPath: String
+        repoPointer: String
+        providers: [ProviderType]
     },
     type Silo {
         id: ID!
@@ -23,6 +38,10 @@ const typeDefs = gql`
     type SiloProperty {
         key: String
         value: String
+    },
+    type Template {
+        id: ID!
+        status: String
     }
 `
 
