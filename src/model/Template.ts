@@ -24,6 +24,17 @@ enum ProviderType {
     OVH = "OVH"
 }
 
+enum TfVariableType {
+    STRING = "STRING",
+    NUMBER = "NUMBER",
+    BOOL = "BOOL",
+    LIST = "LIST",
+    SET = "SET",
+    MAP = "MAP",
+    OBJECT = "OBJECT",
+    TUPLE = "TUPLE"
+}
+
 class Template {
     id : string = ''
     status: string = constants.STATUS_ACTIVE
@@ -38,4 +49,11 @@ class TemplateInput {
     providers: ProviderType[] = []
 }
 
-export { Template, TemplateInput, TemplateType, ProviderType, TemplateData }
+class TfVarDefinition {
+    key: string = ''
+    type: TfVariableType = TfVariableType.STRING
+    typestring: string = '' // to define complex types, i.e. objects or lists
+    hasDefault: boolean = false
+}
+
+export { Template, TemplateInput, TemplateType, TfVarDefinition, ProviderType, TemplateData }

@@ -3,6 +3,7 @@ import * as fs from 'node:fs'
 import path from 'path'
 import childProcess from 'child_process'
 import constants from './constants'
+import { TfVarDefinition } from '../model/Template'
 
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
@@ -102,13 +103,41 @@ function parseTfOutput(tfOutput: string) {
     return tfOutMap
 }
 
-async function parseTfDirectoryForVariables (path: string) {
+async function parseTfDirectoryForVariables (path: string) : Promise<TfVarDefinition[]> {
     const filesToConsider = await fsp.readdir(path, {withFileTypes: true}) // TODO implement {recursive: true} option when available
-    filesToConsider.forEach((f: fs.Dirent) => {
+    let parsedTfVars: TfVarDefinition[] = []
+    for (const f of filesToConsider) {
         if (f.isFile()) {
-            console.log(f.name)
+            const curVars = await parseFileIntoTfVars(path + '/' + f.name)
+            if (curVars && curVars.length) {
+                parsedTfVars = parsedTfVars.concat(curVars)
+            }
         }
-    })
+    }
+    return parsedTfVars
+}
+
+async function parseFileIntoTfVars (path: string) : Promise<TfVarDefinition[]> {
+    const vars: TfVarDefinition[] = []
+    const file = await fsp.open(path)
+    let curVar: TfVarDefinition = new TfVarDefinition()
+    let inVar: boolean = false
+    for await (const line of file.readLines()) {
+        if (inVar && line.trim() === '}') {
+            vars.push(curVar)
+            curVar = new TfVarDefinition()
+            inVar = false
+        } else if (line.includes('variable')) {
+            inVar = true
+            const varName = line.split('variable')[1].replaceAll('{', '').replaceAll('"', '').trim()
+            curVar.key = varName
+        } else if (inVar && line.includes(' default ')) {
+            curVar.hasDefault = true
+        } else if (inVar && line.includes(' type ')) {
+            // TODO type
+        }
+    }
+    return vars
 }
 
 /**
