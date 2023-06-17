@@ -4,11 +4,13 @@ import { Silo } from '../model/Silo'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
+import * as templateService from './template'
+import { ProviderType } from '../model/Template'
 
 const saveToDb = async (silo: Silo) => {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
-    const queryText = `INSERT INTO ${schema}.silos (uuid, status, properties) values ($1, $2, $3) RETURNING *`
-    const queryParams = [siloUuidForDb, silo.status, JSON.stringify(silo.properties)]
+    const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, properties) values ($1, $2, $3, $4) RETURNING *`
+    const queryParams = [siloUuidForDb, silo.status, silo.template_id, JSON.stringify(silo.properties)]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
@@ -29,55 +31,57 @@ const getSilo = async (siloId: string) : Promise<Silo> => {
     const silo : Silo = {
         id: queryRes.rows[0].uuid,
         status: queryRes.rows[0].status,
+        template_id: queryRes.rows[0].template_id,
         properties: queryRes.rows[0].properties
     }
     return silo
 }
 
-async function createSilo (templateId: string, userVariables: any) {
-    // let startTime = (new Date()).getTime()
-    // const siloId = constants.SILO_PREFIX + utils.uuidv4()
-    // const siloSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/silos/azure_k3s_vnet_silo', 'main')
-    // await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
-    // await utils.deleteDir(siloSourcePaths.checkoutPath)
-    // if (params.type === "azure") {
-    //     const siloTfVarsObj = {
-    //         silo_identifier: siloId,
-    //         resource_group_name: params.resource_group_name
-    //     }
-    //     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
-    //     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-    //     console.log(`Creating Azure Silo ${siloId}...`)
-    //     const initializeSiloCmd =
-    //         `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
-    //         `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
-    //         `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
-    //     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-    //     console.log(initSiloData)
-    //     const parsedSiloOut = utils.parseTfOutput(initSiloData)
-    //     const outSiloProps : Property[] = [
-    //         {key: 'resource_group_name', value: params.resource_group_name},
-    //         {key: 'type', value: params.type}
-    //     ]
-    //     Object.keys(parsedSiloOut).forEach((key: string) => {
-    //         const sp : Property = {
-    //             key,
-    //             value: parsedSiloOut[key]
-    //         }
-    //         outSiloProps.push(sp)
-    //     })
-    //     const outSilo : Silo = {
-    //         id: siloId,
-    //         status: constants.STATUS_ACTIVE,
-    //         properties: outSiloProps
-    //     }
-    //     saveToDb(outSilo)
-    //     console.log(outSilo)
-    // } else {
-    //     console.warn(`unsupported silo type = ${params.type}`)
-    // }
-    // const allDoneTime = (new Date()).getTime()
-    // console.log("After TF silo create time = " + (allDoneTime - startTime))
+async function createSilo (templateId: string, userVariables: Property[]) {
+    let startTime = (new Date()).getTime()
+    const siloId = constants.SILO_PREFIX + utils.uuidv4()
+    const template = await templateService.default.getTemplate(templateId)
+    const siloSourcePaths = await utils.gitCheckout(template.record_data.repoUrl, template.record_data.repoPath, template.record_data.repoPointer)
+    await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
+    await utils.deleteDir(siloSourcePaths.checkoutPath)
+    if (template.record_data.providers.includes(ProviderType.AZURE)) {
+        const siloTfVarsObj: any = {
+            silo_identifier: siloId
+        }
+        userVariables.forEach(prop => {
+            siloTfVarsObj[prop.key] = prop.value
+        })
+        const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+        utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+        console.log(`Creating Azure Silo ${siloId}...`)
+        const initializeSiloCmd =
+            `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
+            `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
+            `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+        const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+        console.log(initSiloData)
+        const parsedSiloOut = utils.parseTfOutput(initSiloData)
+        const outSiloProps : Property[] = userVariables.slice()
+        Object.keys(parsedSiloOut).forEach((key: string) => {
+            const sp : Property = {
+                key,
+                value: parsedSiloOut[key]
+            }
+            outSiloProps.push(sp)
+        })
+        const outSilo : Silo = {
+            id: siloId,
+            status: constants.STATUS_ACTIVE,
+            template_id: template.id,
+            properties: outSiloProps
+        }
+        saveToDb(outSilo)
+        console.log(outSilo)
+    } else {
+        console.warn(`unsupported template providers = ${template.record_data.providers}`)
+    }
+    const allDoneTime = (new Date()).getTime()
+    console.log("After TF silo create time = " + (allDoneTime - startTime))
 }
 
 const destroySilo = async (siloId: string) => {

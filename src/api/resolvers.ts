@@ -2,6 +2,7 @@ import silo from '../services/silo'
 import instance from '../services/instance'
 import template from '../services/template'
 import { TemplateInput } from '../model/Template'
+import { Property } from '../model/Property'
 
 const resolvers = {
     Query: {
@@ -14,8 +15,8 @@ const resolvers = {
     Mutation: {
         createSilo: (parent: any, params: any) => {
             const templateId = params.templateId
-            const userVariables : any = params.userVariables
-            // TODO silo.createSilo(siloParams)
+            const userVariables : Property[] = params.userVariables
+            silo.createSilo(templateId, userVariables)
             return true
         },
         destroySilo: (parent: any, params: any) => {

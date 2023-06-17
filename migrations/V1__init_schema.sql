@@ -4,6 +4,7 @@ CREATE TABLE silos (
     last_updated_date timestamptz NOT NULL default now(),
     schema_version integer NOT NULL default 0,
     status text NOT NULL default 'ACTIVE',
+    template_id uuid,
     properties jsonb NULL
 );
 

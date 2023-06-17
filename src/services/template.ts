@@ -3,6 +3,18 @@ import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
 
+const getTemplate = async (templateId: string) : Promise<Template> => {
+    const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
+    const queryParams = [templateId]
+    const queryRes = await runQuery(queryText, queryParams)
+    const template : Template = {
+        id: queryRes.rows[0].uuid,
+        status: queryRes.rows[0].status,
+        record_data: queryRes.rows[0].record_data
+    }
+    return template
+}
+
 async function saveToDb (template: Template) {
     const templateUuidForDb = template.id
     const queryText = `INSERT INTO ${schema}.templates (uuid, status, record_data) values ($1, $2, $3) RETURNING *`
@@ -31,5 +43,6 @@ async function createTemplate (templateInput: TemplateInput) {
 }
 
 export default {
-    createTemplate
+    createTemplate,
+    getTemplate
 }

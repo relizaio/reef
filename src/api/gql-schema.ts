@@ -6,7 +6,7 @@ const typeDefs = gql`
         getSilo(siloId: ID!): Silo
     },
     type Mutation {
-        createSilo(templateId: ID!, userVariables: String): Silo,
+        createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
         destroySilo(siloId: ID!): Boolean,
         createInstance(siloId: ID!): Boolean,
         destroyInstance(instanceId: ID!): Boolean,
@@ -30,12 +30,16 @@ const typeDefs = gql`
         repoPointer: String
         providers: [ProviderType]
     },
+    input KeyValueInput {
+        key: String
+        value: String
+    },
     type Silo {
         id: ID!
         status: String
-        properties: [SiloProperty]
+        properties: [KeyValue]
     },
-    type SiloProperty {
+    type KeyValue {
         key: String
         value: String
     },
