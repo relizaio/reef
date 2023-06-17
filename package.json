@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "main": "src/index.js",
-  "type": "module",
   "scripts": {
     "dev": "nodemon --ignore ./tf_space/ src/index.ts",
     "start": "ts-node src/index.ts",
