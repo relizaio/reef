@@ -1,3 +1,6 @@
+import constants from "../utils/constants"
+import { cipherDaoFromObject, CipherObject } from "./CipherObject"
+
 class AccountProvider {
     providerName: string = 'Undefined'
 }
@@ -15,11 +18,28 @@ class AzureAccount extends AccountProvider {
 class GitAccount extends AccountProvider {
     providerName = 'Git'
 
+    repositoryVendor: string = 'GitHub'
     username: string = ''
     token: string = ''
 }
 
-export default {
+class GitAccountDao extends AccountProvider {
+    providerName = 'Git'
+
+    repositoryVendor: string = 'GitHub'
+    username: CipherObject = new CipherObject()
+    token: CipherObject = new CipherObject()
+}
+
+class AccountDao {
+    id : string = ''
+    status: string = constants.STATUS_ACTIVE
+    record_data : AccountProvider = new AccountProvider()
+}
+
+export {
+    AccountDao,
     AzureAccount,
-    GitAccount
+    GitAccount,
+    GitAccountDao
 }

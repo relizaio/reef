@@ -26,7 +26,7 @@ const server = new ApolloServer({
 })
 
 async function startup () {
-    testConnection()
+    await testConnection()
     await server.start()
 
     app.use(expressMiddleware(server))

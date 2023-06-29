@@ -14,9 +14,14 @@ export function getPool() {
     return pool
 }
 
-export function testConnection () {
+export async function testConnection () {
     const query = "select 1"
-    runQuery(query, [])
+    try {
+        await runQuery(query, [])
+    } catch (error : any) {
+        console.error('Error connecting to PostgreSQL')
+        console.error(error)
+    }
 }
 
 // TODO throw error if can't connect to postgres on startup - do basic select query
