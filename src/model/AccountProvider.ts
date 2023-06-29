@@ -12,4 +12,14 @@ class AzureAccount extends AccountProvider {
     resourceGroupName: string = '' // optional, required if scoped to resource group
 }
 
-export default AzureAccount
+class GitAccount extends AccountProvider {
+    providerName = 'Git'
+
+    username: string = ''
+    token: string = ''
+}
+
+export default {
+    AzureAccount,
+    GitAccount
+}
