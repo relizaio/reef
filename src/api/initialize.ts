@@ -5,6 +5,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import { expressMiddleware } from '@apollo/server/express4'
 import schema from './gql-schema'
 import resolvers from './resolvers'
+import { testConnection } from '../utils/pgUtils'
 
 const app: Express = express();
 app.use(express.json())
@@ -25,6 +26,7 @@ const server = new ApolloServer({
 })
 
 async function startup () {
+    testConnection()
     await server.start()
 
     app.use(expressMiddleware(server))
