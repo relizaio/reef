@@ -3,6 +3,18 @@ import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
 
+async function getAccount (accountId: string) : Promise<AccountDao> {
+    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1`
+    const queryParams = [accountId]
+    const queryRes = await runQuery(queryText, queryParams)
+    const acDao : AccountDao = {
+        id: queryRes.rows[0].uuid,
+        status: queryRes.rows[0].status,
+        record_data: queryRes.rows[0].record_data
+    }
+    return acDao
+}
+
 async function saveToDb (account: AccountDao) {
     const accountUuidForDb = account.id
     const queryText = `INSERT INTO ${schema}.accounts (uuid, status, record_data) values ($1, $2, $3) RETURNING *`
@@ -21,5 +33,6 @@ async function createGitAccount (ga: GitAccountDao) : Promise<AccountDao> {
 }
 
 export default {
-    createGitAccount
+    createGitAccount,
+    getAccount
 }

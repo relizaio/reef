@@ -15,5 +15,6 @@ test('create git account test', async (t) => {
     gaDao.username = cipherObjUserName
     gaDao.token = cipherObjToken
     const createdAcct = await account.createGitAccount(gaDao)
-    console.log(createdAcct.id)
+    const getAcct = await account.getAccount(createdAcct.id)
+    assert.strictEqual(createdAcct.id, getAcct.id)
 })
