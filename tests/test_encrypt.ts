@@ -4,10 +4,11 @@ import crypto from '../src/utils/crypto'
 
 test('encrypt test', async (t) => {
     const passphrase = "testPassPhrase"
+    const hmacSecret = "testHmacSecret"
     const plainText = "Hello World test"
-    const cipherText = await crypto.encrypt(passphrase, plainText)
-    console.log(`cypher text in test = ${cipherText.iv}`)
-    const decipherText = await crypto.decrypt(passphrase, cipherText.ct, cipherText.iv)
+    const cipherObj = await crypto.encrypt(passphrase, plainText, hmacSecret)
+    console.log(`cypher text in test = ${cipherObj.iv}`)
+    const decipherText = await crypto.decrypt(passphrase, hmacSecret, cipherObj)
     console.log(decipherText)
-    assert.strictEqual(1,1)
+    assert.strictEqual(plainText, decipherText)
 })
