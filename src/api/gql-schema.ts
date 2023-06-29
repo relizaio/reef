@@ -10,7 +10,8 @@ const typeDefs = gql`
         destroySilo(siloId: ID!): Boolean,
         createInstance(siloId: ID!): Boolean,
         destroyInstance(instanceId: ID!): Boolean,
-        createTemplate(templateInput: TemplateInput!): Template
+        createTemplate(templateInput: TemplateInput!): Template,
+        createAzureAccount(azureAccount: AzureAccountInput!): AccountId 
     },
     enum ProviderType {
         AZURE
@@ -23,6 +24,13 @@ const typeDefs = gql`
         SILO
         INSTANCE
     },
+    input AzureAccountInput {
+        subscriptionId: String!
+        clientId: String!
+        clientSecret: String!
+        tenantId: String!
+        resourceGroupName: String
+    },
     input TemplateInput {
         type: TemplateType!
         repoUrl: String
@@ -33,6 +41,9 @@ const typeDefs = gql`
     input KeyValueInput {
         key: String
         value: String
+    },
+    type AccountId {
+        id: String
     },
     type Silo {
         id: ID!

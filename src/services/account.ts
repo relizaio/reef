@@ -1,7 +1,8 @@
-import { AccountDao, GitAccountDao } from '../model/Account'
+import { AccountDao, AzureAccount, AzureAccountDao, GitAccountDao } from '../model/Account'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
+import crypto from '../utils/crypto'
 
 async function getAccount (accountId: string) : Promise<AccountDao> {
     const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1`
@@ -32,7 +33,28 @@ async function createGitAccount (ga: GitAccountDao) : Promise<AccountDao> {
     return adao
 }
 
+async function createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
+    const aaDao : AzureAccountDao = await azureAccountDaoFromAzureAccount(aa)
+    const adao : AccountDao = new AccountDao()
+    adao.id = utils.uuidv4()
+    adao.status = constants.STATUS_ACTIVE
+    adao.record_data = aaDao
+    await saveToDb(adao)
+    return adao
+}
+
+async function azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<AzureAccountDao> {
+    const aaDao = new AzureAccountDao()
+    aaDao.resourceGroupName = aa.resourceGroupName
+    aaDao.clientId = await crypto.encrypt(aa.clientId)
+    aaDao.clientSecret = await crypto.encrypt(aa.clientSecret)
+    aaDao.subscriptionId = await crypto.encrypt(aa.subscriptionId)
+    aaDao.tenantId = await crypto.encrypt(aa.tenantId)
+    return aaDao
+}
+
 export default {
+    createAzureAccount,
     createGitAccount,
     getAccount
 }

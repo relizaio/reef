@@ -1,8 +1,10 @@
 import silo from '../services/silo'
 import instance from '../services/instance'
 import template from '../services/template'
+import account from '../services/account'
 import { TemplateInput } from '../model/Template'
 import { Property } from '../model/Property'
+import { AzureAccount } from '../model/Account'
 
 const resolvers = {
     Query: {
@@ -38,6 +40,11 @@ const resolvers = {
             const templateInput : TemplateInput = params.templateInput
             template.createTemplate(templateInput)
             return true
+        },
+        createAzureAccount: async (parent: any, params: any) => {
+            const azureAccountInput : AzureAccount = params.azureAccount
+            const azAct = await account.createAzureAccount(azureAccountInput)
+            return {id: azAct.id}
         },
     }
 }

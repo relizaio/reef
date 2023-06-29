@@ -15,6 +15,16 @@ class AzureAccount extends AccountProvider {
     resourceGroupName: string = '' // optional, required if scoped to resource group
 }
 
+class AzureAccountDao extends AccountProvider {
+    providerName = 'Azure'
+
+    subscriptionId: CipherObject = new CipherObject()
+    clientId: CipherObject = new CipherObject()
+    clientSecret: CipherObject = new CipherObject()
+    tenantId: CipherObject = new CipherObject()
+    resourceGroupName: string = ''
+}
+
 class GitAccount extends AccountProvider {
     providerName = 'Git'
 
@@ -40,6 +50,7 @@ class AccountDao {
 export {
     AccountDao,
     AzureAccount,
+    AzureAccountDao,
     GitAccount,
     GitAccountDao
 }
