@@ -1,10 +1,12 @@
 import silo from '../services/silo'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
-import testAa from '../../local_tests/TestAccounts'
+import * as templateService from './template'
+import account from './account'
 import { Instance } from '../model/Instance'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
+import { ProviderType } from '../model/Template'
 
 const saveToDb = async (instance: Instance) => {
     const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
@@ -24,11 +26,10 @@ const archiveInDb = async (instanceId: string) => {
 }
 
 const createInstance = async (siloId: string) => {
-    let startTime = (new Date()).getTime()
+    const startTime = (new Date()).getTime()
 
     const siloEntity = await silo.getSilo(siloId)
     const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
-    // TODO: instance template should be driven by silo props; possibly allow several instance templates per silo
     
     const instSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/instances/azure_k3s_instance', 'main')
     await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
@@ -44,29 +45,36 @@ const createInstance = async (siloId: string) => {
     })
     utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
-    const initializeInstanceCmd =
-        `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
-        `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
-        `cd ${constants.TF_SPACE}/${instanceId} && terraform init && terraform plan && terraform apply -auto-approve`
-    const initInstanceData = await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
-    console.log(initInstanceData)
-    const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
-    console.log(parsedInstanceOut)
-    const outInstanceProps : Property[] = []
-    Object.keys(parsedInstanceOut).forEach((key: string) => {
-        const sp : Property = {
-            key,
-            value: parsedInstanceOut[key]
+    const template = await templateService.default.getTemplate(siloEntity.template_id)
+    if (template.record_data.providers.includes(ProviderType.AZURE)) {
+        // locate azure account - TODO for now only single acct is supported
+        const azureActId = template.record_data.authAccounts[0]
+        const azureAct = await account.getAzureAccount(azureActId)
+
+        const initializeInstanceCmd =
+            `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
+            `cd ${constants.TF_SPACE}/${instanceId} && terraform init && terraform plan && terraform apply -auto-approve`
+        const initInstanceData = await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
+        console.log(initInstanceData)
+        const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
+        console.log(parsedInstanceOut)
+        const outInstanceProps : Property[] = []
+        Object.keys(parsedInstanceOut).forEach((key: string) => {
+            const sp : Property = {
+                key,
+                value: parsedInstanceOut[key]
+            }
+            outInstanceProps.push(sp)
+        })
+        const outInstance : Instance = {
+            id: instanceId,
+            status: constants.STATUS_ACTIVE,
+            silo_id: siloId,
+            properties: outInstanceProps
         }
-        outInstanceProps.push(sp)
-    })
-    const outInstance : Instance = {
-        id: instanceId,
-        status: constants.STATUS_ACTIVE,
-        silo_id: siloId,
-        properties: outInstanceProps
+        saveToDb(outInstance)
     }
-    saveToDb(outInstance)
     const allDoneTime = (new Date()).getTime()
     console.log("After TF instance create time = " + (allDoneTime - startTime))
 }
