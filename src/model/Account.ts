@@ -1,5 +1,5 @@
 import constants from "../utils/constants"
-import { cipherDaoFromObject, CipherObject, CipherDao } from "./CipherObject"
+import { CipherObject, CipherDao } from "./CipherObject"
 
 class AccountProvider {
     providerName: string = 'Undefined'
@@ -37,8 +37,8 @@ class GitAccountDao extends AccountProvider {
     providerName = 'Git'
 
     repositoryVendor: string = 'GitHub'
-    username: CipherObject = new CipherObject()
-    token: CipherObject = new CipherObject()
+    username: CipherDao = new CipherDao()
+    token: CipherDao = new CipherDao()
 }
 
 class AccountDao {

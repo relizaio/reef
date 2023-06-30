@@ -11,7 +11,8 @@ const typeDefs = gql`
         createInstance(siloId: ID!): Boolean,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
-        createAzureAccount(azureAccount: AzureAccountInput!): AccountId 
+        createAzureAccount(azureAccount: AzureAccountInput!): AccountId,
+        createGitAccount(gitAccount: GitAccountInput!): AccountId
     },
     enum ProviderType {
         AZURE
@@ -30,6 +31,11 @@ const typeDefs = gql`
         clientSecret: String!
         tenantId: String!
         resourceGroupName: String
+    },
+    input GitAccountInput {
+        username: String!
+        token: String!
+        repositoryVendor: String
     },
     input TemplateInput {
         type: TemplateType!

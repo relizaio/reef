@@ -1,4 +1,4 @@
-import { AccountDao, AzureAccount, AzureAccountDao, GitAccountDao } from '../model/Account'
+import { AccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
@@ -26,10 +26,11 @@ async function saveToDb (account: AccountDao) {
 }
 
 async function createGitAccount (ga: GitAccountDao) : Promise<AccountDao> {
+    const gaDao : GitAccountDao = await gitAccountDaoFromAzureAccount(ga)
     const adao : AccountDao = new AccountDao()
     adao.id = utils.uuidv4()
     adao.status = constants.STATUS_ACTIVE
-    adao.record_data = ga
+    adao.record_data = gaDao
     await saveToDb(adao)
     return adao
 }
@@ -42,6 +43,14 @@ async function createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
     adao.record_data = aaDao
     await saveToDb(adao)
     return adao
+}
+
+async function gitAccountDaoFromAzureAccount (ga: GitAccount) : Promise<GitAccountDao> {
+    const gaDao = new GitAccountDao()
+    gaDao.repositoryVendor = ga.repositoryVendor
+    gaDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
+    gaDao.token = cipherDaoFromObject(await crypto.encrypt(ga.token))
+    return gaDao
 }
 
 async function azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<AzureAccountDao> {
