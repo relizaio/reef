@@ -37,6 +37,7 @@ const typeDefs = gql`
         repoPath: String
         repoPointer: String
         providers: [ProviderType]
+        authAccounts: [ID]
     },
     input KeyValueInput {
         key: String

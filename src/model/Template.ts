@@ -7,7 +7,7 @@ class TemplateData {
     repoPointer: string = '' // this can be git branch, git tag, git hash
     providers: ProviderType[] = []
     userVariables: TfVarDefinition[] = [] // variables that must be configured by the user via user input
-    // authAccount TBD TODO
+    authAccounts: string[] = [''] // uuids of auth accounts to use, TODO for now will use with single account, but allowing for multiple in the future
 }
 
 enum TemplateType {
@@ -47,6 +47,7 @@ class TemplateInput {
     repoPath: string = ''
     repoPointer: string = ''
     providers: ProviderType[] = []
+    authAccounts: string[] = ['']
 }
 
 class TfVarDefinition {

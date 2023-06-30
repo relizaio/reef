@@ -1,4 +1,5 @@
 import { AccountDao, AzureAccount, AzureAccountDao, GitAccountDao } from '../model/Account'
+import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
@@ -46,15 +47,31 @@ async function createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
 async function azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<AzureAccountDao> {
     const aaDao = new AzureAccountDao()
     aaDao.resourceGroupName = aa.resourceGroupName
-    aaDao.clientId = await crypto.encrypt(aa.clientId)
-    aaDao.clientSecret = await crypto.encrypt(aa.clientSecret)
-    aaDao.subscriptionId = await crypto.encrypt(aa.subscriptionId)
-    aaDao.tenantId = await crypto.encrypt(aa.tenantId)
+    aaDao.clientId = cipherDaoFromObject(await crypto.encrypt(aa.clientId))
+    aaDao.clientSecret = cipherDaoFromObject(await crypto.encrypt(aa.clientSecret))
+    aaDao.subscriptionId = cipherDaoFromObject(await crypto.encrypt(aa.subscriptionId))
+    aaDao.tenantId = cipherDaoFromObject(await crypto.encrypt(aa.tenantId))
     return aaDao
+}
+
+async function getAzureAccount (accountId: string) : Promise<AzureAccount> {
+    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1`
+    const queryParams = [accountId]
+    const queryRes = await runQuery(queryText, queryParams)
+    const aaDao : AzureAccountDao = queryRes.rows[0].record_data
+    const aa = new AzureAccount()
+    console.log(aaDao.clientId.iv)
+    aa.clientId = await crypto.decrypt(cipherObjectFromDao(aaDao.clientId))
+    aa.clientSecret = await crypto.decrypt(cipherObjectFromDao(aaDao.clientSecret))
+    aa.subscriptionId = await crypto.decrypt(cipherObjectFromDao(aaDao.subscriptionId))
+    aa.tenantId = await crypto.decrypt(cipherObjectFromDao(aaDao.tenantId))
+    aa.resourceGroupName = aaDao.resourceGroupName
+    return aa
 }
 
 export default {
     createAzureAccount,
     createGitAccount,
-    getAccount
+    getAccount,
+    getAzureAccount
 }

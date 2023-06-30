@@ -1,5 +1,5 @@
 import constants from "../utils/constants"
-import { cipherDaoFromObject, CipherObject } from "./CipherObject"
+import { cipherDaoFromObject, CipherObject, CipherDao } from "./CipherObject"
 
 class AccountProvider {
     providerName: string = 'Undefined'
@@ -18,10 +18,10 @@ class AzureAccount extends AccountProvider {
 class AzureAccountDao extends AccountProvider {
     providerName = 'Azure'
 
-    subscriptionId: CipherObject = new CipherObject()
-    clientId: CipherObject = new CipherObject()
-    clientSecret: CipherObject = new CipherObject()
-    tenantId: CipherObject = new CipherObject()
+    subscriptionId: CipherDao = new CipherDao()
+    clientId: CipherDao = new CipherDao()
+    clientSecret: CipherDao = new CipherDao()
+    tenantId: CipherDao = new CipherDao()
     resourceGroupName: string = ''
 }
 

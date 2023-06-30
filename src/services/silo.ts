@@ -1,11 +1,11 @@
 import utils from '../utils/utils'
-import testAa from '../../local_tests/TestAccounts'
 import { Silo } from '../model/Silo'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import constants from '../utils/constants'
 import * as templateService from './template'
 import { ProviderType } from '../model/Template'
+import account from './account'
 
 const saveToDb = async (silo: Silo) => {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -45,6 +45,9 @@ async function createSilo (templateId: string, userVariables: Property[]) {
     await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
+        // locate azure account - TODO for now only single acct is supported
+        const azureActId = template.record_data.authAccounts[0]
+        const azureAct = await account.getAzureAccount(azureActId)
         const siloTfVarsObj: any = {
             silo_identifier: siloId
         }
@@ -55,8 +58,8 @@ async function createSilo (templateId: string, userVariables: Property[]) {
         utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
         console.log(`Creating Azure Silo ${siloId}...`)
         const initializeSiloCmd =
-            `export ARM_CLIENT_ID=${testAa.clientId}; export ARM_CLIENT_SECRET=${testAa.clientSecret}; ` + 
-            `export ARM_SUBSCRIPTION_ID=${testAa.subscriptionId}; export ARM_TENANT_ID=${testAa.tenantId}; ` +
+            `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
             `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
         const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         console.log(initSiloData)

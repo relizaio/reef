@@ -12,7 +12,7 @@ class CipherTextStorage {
 
 class CipherDao {
     ctStorage: [CipherTextStorage] = [new CipherTextStorage()]
-    iv: Uint8Array = new Uint8Array()
+    iv: number[] = []
     hmac: string = ''
 }
 
@@ -20,7 +20,7 @@ class CipherDao {
 // TODO, for now only supports internal db storage
 export function cipherObjectFromDao (cipherDao : CipherDao) : CipherObject {
     const co : CipherObject = {
-        iv: cipherDao.iv,
+        iv: Uint8Array.from(cipherDao.iv),
         hmac: cipherDao.hmac,
         ct: cipherDao.ctStorage[0].ctToken
     }
@@ -30,7 +30,7 @@ export function cipherObjectFromDao (cipherDao : CipherDao) : CipherObject {
 // TODO, for now only supports internal db storage
 export function cipherDaoFromObject (cipherObj : CipherObject) : CipherDao {
     const cdao : CipherDao = {
-        iv: cipherObj.iv,
+        iv: Array.from(cipherObj.iv),
         hmac: cipherObj.hmac,
         ctStorage: [{
             ctToken: cipherObj.ct,
@@ -41,4 +41,4 @@ export function cipherDaoFromObject (cipherObj : CipherObject) : CipherDao {
     return cdao
 }
 
-export { CipherObject }
+export { CipherObject, CipherDao }

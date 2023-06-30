@@ -36,10 +36,10 @@ const resolvers = {
             instance.destroyInstance(instanceId)
             return true
         },
-        createTemplate: (parent: any, params: any) => {
+        createTemplate: async (parent: any, params: any) => {
             const templateInput : TemplateInput = params.templateInput
-            template.createTemplate(templateInput)
-            return true
+            const tmpl = await template.createTemplate(templateInput)
+            return {id: tmpl.id}
         },
         createAzureAccount: async (parent: any, params: any) => {
             const azureAccountInput : AzureAccount = params.azureAccount

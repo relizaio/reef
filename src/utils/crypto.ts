@@ -28,7 +28,7 @@ async function encrypt (plainText: string, inputPassphrase?: string, inputHmacSe
     return cipherObj
 }
 
-async function decrypt (cipherObj: CipherObject, inputPassphrase?: string, inputHmacSecret?: string) {
+async function decrypt (cipherObj: CipherObject, inputPassphrase?: string, inputHmacSecret?: string) : Promise<string> {
     const passphrase = inputPassphrase ? inputPassphrase : PASS_PHRASE
     const hmacSecret = inputHmacSecret ? inputHmacSecret : HMAC_SECRET
     const hmac = createHmac(hmacAlgorithm, hmacSecret);
@@ -36,7 +36,7 @@ async function decrypt (cipherObj: CipherObject, inputPassphrase?: string, input
     const hmacText = hmac.digest('hex')
     if (hmacText !== cipherObj.hmac) {
         console.error('hmac does not match, aborting decryption')
-        return
+        return ''
     } else {
         const key = scryptSync(passphrase, 'salt', keyLength)
         const decipher = createDecipheriv(algorithm, key, cipherObj.iv)

@@ -15,7 +15,7 @@ const getTemplate = async (templateId: string) : Promise<Template> => {
     return template
 }
 
-async function saveToDb (template: Template) {
+async function saveToDb (template: Template) : Promise<Template> {
     const templateUuidForDb = template.id
     const queryText = `INSERT INTO ${schema}.templates (uuid, status, record_data) values ($1, $2, $3) RETURNING *`
     const queryParams = [templateUuidForDb, template.status, JSON.stringify(template.record_data)]
@@ -23,7 +23,7 @@ async function saveToDb (template: Template) {
     return queryRes.rows[0]
 }
 
-async function createTemplate (templateInput: TemplateInput) {
+async function createTemplate (templateInput: TemplateInput): Promise<Template> {
     const template: Template = new Template()
     template.id = utils.uuidv4()
     template.status = constants.STATUS_ACTIVE
@@ -33,6 +33,7 @@ async function createTemplate (templateInput: TemplateInput) {
     template.record_data.repoUrl = templateInput.repoUrl
     template.record_data.type = templateInput.type
     template.record_data.providers = templateInput.providers
+    template.record_data.authAccounts = templateInput.authAccounts
 
     // parse supported user variables from actual template
     const checkoutPaths = await utils.gitCheckout(templateInput.repoUrl, templateInput.repoPath, templateInput.repoPointer)
@@ -40,6 +41,7 @@ async function createTemplate (templateInput: TemplateInput) {
     await utils.deleteDir(checkoutPaths.checkoutPath)
     template.record_data.userVariables = tfVars
     saveToDb(template)
+    return template
 }
 
 export default {
