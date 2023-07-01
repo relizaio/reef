@@ -4,6 +4,7 @@ import path from 'path'
 import childProcess from 'child_process'
 import constants from './constants'
 import { TfVarDefinition } from '../model/Template'
+import { GitCheckoutObject } from '../model/GitCheckoutObject'
 
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
@@ -146,17 +147,18 @@ async function parseFileIntoTfVars (path: string) : Promise<TfVarDefinition[]> {
  * @param gitPath
  * @param gitPointer - this can be a branch, a tag or a specific commit hash to pull 
  */
-async function gitCheckout (gitUri: string, gitPath: string, gitPointer: string): Promise<GitCheckoutPaths> {
+async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
+    let gitPath = gco.gitPath
     const gitCheckoutId = constants.GIT_PREFIX + uuidv4()
     const checkoutPath = `./${constants.TF_SPACE}/${gitCheckoutId}`
     let retPath = checkoutPath
     await fsp.mkdir(checkoutPath)
     let checkoutCmd = ''
     if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
-        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git pull --depth=1 origin ${gitPointer}`
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gco.gitUri} && git pull --depth=1 origin ${gco.gitPointer}`
     } else {
         const cleanedGitPath = gitPath.replace(/^\.\//, '').replace(/^\//, '')
-        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gitPointer}`
+        checkoutCmd = `cd ${checkoutPath} && git init && git remote add origin ${gco.gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gco.gitPointer}`
         retPath = checkoutPath + '/' + cleanedGitPath
     }
     const gitCheckoutData = await shellExec('sh', ['-c', checkoutCmd], 15*60*1000)

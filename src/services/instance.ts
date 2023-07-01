@@ -7,6 +7,7 @@ import { Instance } from '../model/Instance'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import { ProviderType } from '../model/Template'
+import { GitCheckoutObject } from '../model/GitCheckoutObject'
 
 const saveToDb = async (instance: Instance) => {
     const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
@@ -31,7 +32,12 @@ const createInstance = async (siloId: string) => {
     const siloEntity = await silo.getSilo(siloId)
     const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
     
-    const instSourcePaths = await utils.gitCheckout('https://github.com/relizaio/reliza-ephemeral-framework.git', 'terraform_templates/instances/azure_k3s_instance', 'main')
+    // TODO const gco = templateService.default.gitCheckoutObjectFromTemplate()
+    const gco : GitCheckoutObject = new GitCheckoutObject()
+    gco.gitUri = 'https://github.com/relizaio/reliza-ephemeral-framework.git'
+    gco.gitPath = 'terraform_templates/instances/azure_k3s_instance'
+    gco.gitPointer = 'main'
+    const instSourcePaths = await utils.gitCheckout(gco)
     await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
     await utils.deleteDir(instSourcePaths.checkoutPath)
 

@@ -25,7 +25,7 @@ async function saveToDb (account: AccountDao) {
     return queryRes.rows[0]
 }
 
-async function createGitAccount (ga: GitAccountDao) : Promise<AccountDao> {
+async function createGitAccount (ga: GitAccount) : Promise<AccountDao> {
     const gaDao : GitAccountDao = await gitAccountDaoFromAzureAccount(ga)
     const adao : AccountDao = new AccountDao()
     adao.id = utils.uuidv4()

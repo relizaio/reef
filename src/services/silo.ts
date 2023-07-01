@@ -41,7 +41,8 @@ async function createSilo (templateId: string, userVariables: Property[]) {
     let startTime = (new Date()).getTime()
     const siloId = constants.SILO_PREFIX + utils.uuidv4()
     const template = await templateService.default.getTemplate(templateId)
-    const siloSourcePaths = await utils.gitCheckout(template.record_data.repoUrl, template.record_data.repoPath, template.record_data.repoPointer)
+    const gco = await templateService.default.gitCheckoutObjectFromTemplate(template)
+    const siloSourcePaths = await utils.gitCheckout(gco)
     await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {

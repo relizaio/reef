@@ -2,6 +2,7 @@ import { Template, TemplateInput, TemplateData } from '../model/Template'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
+import { GitCheckoutObject } from '../model/GitCheckoutObject'
 
 const getTemplate = async (templateId: string) : Promise<Template> => {
     const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
@@ -36,7 +37,8 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     template.record_data.authAccounts = templateInput.authAccounts
 
     // parse supported user variables from actual template
-    const checkoutPaths = await utils.gitCheckout(templateInput.repoUrl, templateInput.repoPath, templateInput.repoPointer)
+    const gco = await gitCheckoutObjectFromTemplate(template)
+    const checkoutPaths = await utils.gitCheckout(gco)
     const tfVars = await utils.parseTfDirectoryForVariables(checkoutPaths.fullTemplatePath)
     await utils.deleteDir(checkoutPaths.checkoutPath)
     template.record_data.userVariables = tfVars
@@ -44,7 +46,16 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     return template
 }
 
+async function gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCheckoutObject> {
+    const gco : GitCheckoutObject = new GitCheckoutObject()
+    gco.gitUri = template.record_data.repoUrl
+    gco.gitPath = template.record_data.repoPath
+    gco.gitPointer = template.record_data.repoPointer
+    return gco
+}
+
 export default {
     createTemplate,
-    getTemplate
+    getTemplate,
+    gitCheckoutObjectFromTemplate
 }
