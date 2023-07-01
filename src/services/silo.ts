@@ -45,6 +45,7 @@ async function createSilo (templateId: string, userVariables: Property[]) {
     const siloSourcePaths = await utils.gitCheckout(gco)
     await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
     await utils.deleteDir(siloSourcePaths.checkoutPath)
+    if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
         // locate azure account - TODO for now only single acct is supported
         const azureActId = template.record_data.authAccounts[0]

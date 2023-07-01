@@ -42,6 +42,7 @@ const createInstance = async (siloId: string, templateId: string) => {
     const instSourcePaths = await utils.gitCheckout(gco)
     await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
     await utils.deleteDir(instSourcePaths.checkoutPath)
+    if (instSourcePaths.utilPath) await utils.deleteDir(instSourcePaths.utilPath)
 
     const instanceTfVarsFile = `./${constants.TF_SPACE}/${instanceId}/${constants.TF_DEFAULT_TFVARS_FILE}`
 

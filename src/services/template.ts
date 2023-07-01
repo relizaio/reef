@@ -42,6 +42,8 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     const checkoutPaths = await utils.gitCheckout(gco)
     const tfVars = await utils.parseTfDirectoryForVariables(checkoutPaths.fullTemplatePath)
     await utils.deleteDir(checkoutPaths.checkoutPath)
+    if (checkoutPaths.utilPath) await utils.deleteDir(checkoutPaths.utilPath)
+    
     template.record_data.userVariables = tfVars
     saveToDb(template)
     return template

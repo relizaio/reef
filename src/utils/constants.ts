@@ -5,5 +5,6 @@ export default {
     SILO_PREFIX: "silo-",
     INSTANCE_PREFIX: "instance-",
     GIT_PREFIX: "git-",
+    CRED_PREFIX: "cred-",
     TF_SPACE: "tf_space"
 }
