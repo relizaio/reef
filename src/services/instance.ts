@@ -26,17 +26,19 @@ const archiveInDb = async (instanceId: string) => {
     return queryRes.rows[0]
 }
 
-const createInstance = async (siloId: string) => {
+const createInstance = async (siloId: string, templateId: string) => {
     const startTime = (new Date()).getTime()
 
     const siloEntity = await silo.getSilo(siloId)
+
+    const instanceTemplate = await templateService.default.getTemplate(templateId)
+
+    // TODO: validate that instance template has silo template as parent
+
+    const gco = await templateService.default.gitCheckoutObjectFromTemplate(instanceTemplate)
+
     const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
     
-    // TODO const gco = templateService.default.gitCheckoutObjectFromTemplate()
-    const gco : GitCheckoutObject = new GitCheckoutObject()
-    gco.gitUri = 'https://github.com/relizaio/reliza-ephemeral-framework.git'
-    gco.gitPath = 'terraform_templates/instances/azure_k3s_instance'
-    gco.gitPointer = 'main'
     const instSourcePaths = await utils.gitCheckout(gco)
     await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
     await utils.deleteDir(instSourcePaths.checkoutPath)
@@ -51,10 +53,9 @@ const createInstance = async (siloId: string) => {
     })
     utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
-    const template = await templateService.default.getTemplate(siloEntity.template_id)
-    if (template.record_data.providers.includes(ProviderType.AZURE)) {
+    if (instanceTemplate.record_data.providers.includes(ProviderType.AZURE)) {
         // locate azure account - TODO for now only single acct is supported
-        const azureActId = template.record_data.authAccounts[0]
+        const azureActId = instanceTemplate.record_data.authAccounts[0]
         const azureAct = await account.getAzureAccount(azureActId)
 
         const initializeInstanceCmd =

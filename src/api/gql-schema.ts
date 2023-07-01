@@ -8,7 +8,7 @@ const typeDefs = gql`
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
         destroySilo(siloId: ID!): Boolean,
-        createInstance(siloId: ID!): Boolean,
+        createInstance(siloId: ID!, templateId: ID!): Boolean,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
         createAzureAccount(azureAccount: AzureAccountInput!): AccountId,
@@ -44,6 +44,7 @@ const typeDefs = gql`
         repoPointer: String
         providers: [ProviderType]
         authAccounts: [ID]
+        parentTemplates: [ID]
     },
     input KeyValueInput {
         key: String

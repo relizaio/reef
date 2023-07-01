@@ -8,6 +8,7 @@ class TemplateData {
     providers: ProviderType[] = []
     userVariables: TfVarDefinition[] = [] // variables that must be configured by the user via user input
     authAccounts: string[] = [''] // uuids of auth accounts to use, TODO for now will use with single account, but allowing for multiple in the future
+    parentTemplates: string[] = [''] // optional uuids of parent templates - i.e. silo template ids for instance template
 }
 
 enum TemplateType {
@@ -48,6 +49,7 @@ class TemplateInput {
     repoPointer: string = ''
     providers: ProviderType[] = []
     authAccounts: string[] = ['']
+    parentTemplates: string[] = ['']
 }
 
 class TfVarDefinition {

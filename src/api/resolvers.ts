@@ -28,7 +28,8 @@ const resolvers = {
         },
         createInstance: (parent: any, params: any) => {
             const siloId : string = params.siloId
-            instance.createInstance(siloId)
+            const templateId : string = params.templateId
+            instance.createInstance(siloId, templateId)
             return true
         },
         destroyInstance: (parent: any, params: any) => {

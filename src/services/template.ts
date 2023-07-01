@@ -35,6 +35,7 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     template.record_data.type = templateInput.type
     template.record_data.providers = templateInput.providers
     template.record_data.authAccounts = templateInput.authAccounts
+    template.record_data.parentTemplates = templateInput.parentTemplates
 
     // parse supported user variables from actual template
     const gco = await gitCheckoutObjectFromTemplate(template)
