@@ -26,7 +26,7 @@ async function saveToDb (account: AccountDao) {
 }
 
 async function createGitAccount (ga: GitAccount) : Promise<AccountDao> {
-    const gaDao : GitAccountDao = await gitAccountDaoFromAzureAccount(ga)
+    const gaDao : GitAccountDao = await gitAccountDaoFromGitAccount(ga)
     const adao : AccountDao = new AccountDao()
     adao.id = utils.uuidv4()
     adao.status = constants.STATUS_ACTIVE
@@ -45,7 +45,7 @@ async function createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
     return adao
 }
 
-async function gitAccountDaoFromAzureAccount (ga: GitAccount) : Promise<GitAccountDao> {
+async function gitAccountDaoFromGitAccount (ga: GitAccount) : Promise<GitAccountDao> {
     const gaDao = new GitAccountDao()
     gaDao.repositoryVendor = ga.repositoryVendor
     gaDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
@@ -93,9 +93,38 @@ async function getAzureAccountFromSet(accountSet: string[]) : Promise<AzureAccou
     return aa
 }
 
+async function getGitAccount (accountId: string) : Promise<GitAccount | null> {
+    let ga : GitAccount | null = null
+
+    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1 and record_data->>'providerName' = $2`
+    const queryParams = [accountId, constants.GIT_ACCOUNT_PROVIDER]
+    const queryRes = await runQuery(queryText, queryParams)
+    if (queryRes.rows && queryRes.rows.length) {
+        const gaDao : GitAccountDao = queryRes.rows[0].record_data
+        ga = new GitAccount()
+        ga.username = await crypto.decrypt(cipherObjectFromDao(gaDao.username))
+        ga.token = await crypto.decrypt(cipherObjectFromDao(gaDao.token))
+        ga.repositoryVendor = gaDao.repositoryVendor
+    }
+    return ga
+}
+
+async function getGitAccountFromSet(accountSet: string[]) : Promise<GitAccount | null> {
+    let ga : GitAccount | null = null
+    if (accountSet && accountSet.length) {
+        let i = 0
+        while (!ga && i < accountSet.length) {
+            ga = await getGitAccount(accountSet[i])
+            ++i
+        }
+    }
+    return ga
+}
+
 export default {
     createAzureAccount,
     createGitAccount,
     getAccount,
-    getAzureAccountFromSet
+    getAzureAccountFromSet,
+    getGitAccountFromSet
 }

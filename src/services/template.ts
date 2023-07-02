@@ -3,6 +3,8 @@ import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
 import { GitCheckoutObject } from '../model/GitCheckoutObject'
+import { GitAccount } from '../model/Account'
+import account from './account'
 
 const getTemplate = async (templateId: string) : Promise<Template> => {
     const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
@@ -51,9 +53,19 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
 
 async function gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCheckoutObject> {
     const gco : GitCheckoutObject = new GitCheckoutObject()
+
+    const ga : GitAccount | null = await account.getGitAccountFromSet(template.record_data.authAccounts)
+    if (ga) {
+        gco.isPrivate = true
+        gco.token = ga.token
+        gco.username = ga.username
+    }
+
     gco.gitUri = template.record_data.repoUrl
     gco.gitPath = template.record_data.repoPath
     gco.gitPointer = template.record_data.repoPointer
+
+
     return gco
 }
 
