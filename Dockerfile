@@ -9,7 +9,7 @@ ARG CI_ENV=noci
 ARG GIT_COMMIT=git_commit_undefined
 ARG GIT_BRANCH=git_branch_undefined
 ARG VERSION=not_versioned
-RUN apk add openssh
+RUN apk add openssh git
 COPY --from=builder /tmp/terraform /usr/local/bin/
 RUN mkdir /app
 RUN echo "version=$VERSION" > /app/version && echo "commit=$GIT_COMMIT" >> /app/version && echo "branch=$GIT_BRANCH" >> /app/version
