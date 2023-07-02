@@ -14,16 +14,19 @@ docker run -d --name reliza-ephemeral-postgres -e POSTGRES_PASSWORD=password -p 
 ### Flyway command:
 
 ```
+cd backend
 docker run --rm -v ./migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=ref -schemas='ref' migrate
 ```
 
 ### Flyway for PowerShell:
 ```
+cd backend
 docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=ref -schemas='ref' migrate
 ```
 
 ### Run test sample:
 
 ```
+cd backend
 node --loader tsx --test tests/test2.ts
 ```

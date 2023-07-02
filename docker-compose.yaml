@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   ref-backend:
-    build: ./
+    build: ./backend
     environment:
      - POSTGRES_HOST=ref-postgresql
      - POSTGRES_PORT=5432
@@ -24,7 +24,7 @@ services:
         'migrate'
       ]
     volumes:
-      - ./migrations:/flyway/sql
+      - ./backend/migrations:/flyway/sql
   ref-postgresql:
     image: postgres:15
     environment:
