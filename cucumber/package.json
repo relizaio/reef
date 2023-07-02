@@ -1,0 +1,15 @@
+{
+  "name": "ref-cucumber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js"
+  },
+  "keywords": [],
+  "author": "Reliza Incorporated",
+  "license": "MIT",
+  "devDependencies": {
+    "@cucumber/cucumber": "^9.2.0"
+  }
+}
