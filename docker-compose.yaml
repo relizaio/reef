@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  ref-backend:
+    build: ./
+    environment:
+     - POSTGRES_HOST=ref-postgresql
+     - POSTGRES_PORT=5432
+    depends_on:
+     - ref-postgresql
+    ports:
+     - "4002:4001"
+  ref-postgres-init:
+    image: 'flyway/flyway:9-alpine'
+    restart: on-failure
+    depends_on:
+      - ref-postgresql
+    command:
+      [
+        '-url=jdbc:postgresql://ref-postgresql:5432/postgres',
+        '-user=postgres',
+        '-password=password',
+        '-defaultSchema=ref',
+        '-schemas=ref',
+        'migrate'
+      ]
+    volumes:
+      - ./migrations:/flyway/sql
+  ref-postgresql:
+    image: postgres:15
+    environment:
+     - POSTGRES_PASSWORD=password
