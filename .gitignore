@@ -1,9 +1,9 @@
-node_modules
-local_tests
+**/node_modules
+**/local_tests
 **/*.tfstate.backup
 **/*.tfstate
 **/*.lock.hcl
 **/.terraform/**
 **/tf_script/scratch/*sshkey*
-tf_space/**
-!tf_space/README.md
+**/tf_space/**
+!**/tf_space/README.md
