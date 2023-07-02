@@ -63,18 +63,33 @@ async function azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<Azur
     return aaDao
 }
 
-async function getAzureAccount (accountId: string) : Promise<AzureAccount> {
-    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1`
-    const queryParams = [accountId]
+async function getAzureAccount (accountId: string) : Promise<AzureAccount | null> {
+    let aa : AzureAccount | null = null
+
+    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1 and record_data->>'providerName' = $2`
+    const queryParams = [accountId, constants.AZURE_ACCOUNT_PROVIDER]
     const queryRes = await runQuery(queryText, queryParams)
-    const aaDao : AzureAccountDao = queryRes.rows[0].record_data
-    const aa = new AzureAccount()
-    console.log(aaDao.clientId.iv)
-    aa.clientId = await crypto.decrypt(cipherObjectFromDao(aaDao.clientId))
-    aa.clientSecret = await crypto.decrypt(cipherObjectFromDao(aaDao.clientSecret))
-    aa.subscriptionId = await crypto.decrypt(cipherObjectFromDao(aaDao.subscriptionId))
-    aa.tenantId = await crypto.decrypt(cipherObjectFromDao(aaDao.tenantId))
-    aa.resourceGroupName = aaDao.resourceGroupName
+    if (queryRes.rows && queryRes.rows.length) {
+        const aaDao : AzureAccountDao = queryRes.rows[0].record_data
+        aa = new AzureAccount()
+        aa.clientId = await crypto.decrypt(cipherObjectFromDao(aaDao.clientId))
+        aa.clientSecret = await crypto.decrypt(cipherObjectFromDao(aaDao.clientSecret))
+        aa.subscriptionId = await crypto.decrypt(cipherObjectFromDao(aaDao.subscriptionId))
+        aa.tenantId = await crypto.decrypt(cipherObjectFromDao(aaDao.tenantId))
+        aa.resourceGroupName = aaDao.resourceGroupName
+    }
+    return aa
+}
+
+async function getAzureAccountFromSet(accountSet: string[]) : Promise<AzureAccount | null> {
+    let aa : AzureAccount | null = null
+    if (accountSet && accountSet.length) {
+        let i = 0
+        while (!aa && i < accountSet.length) {
+            aa = await getAzureAccount(accountSet[i])
+            ++i
+        }
+    }
     return aa
 }
 
@@ -82,5 +97,5 @@ export default {
     createAzureAccount,
     createGitAccount,
     getAccount,
-    getAzureAccount
+    getAzureAccountFromSet
 }

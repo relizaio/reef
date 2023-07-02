@@ -1,12 +1,12 @@
 import constants from "../utils/constants"
-import { CipherObject, CipherDao } from "./CipherObject"
+import { CipherDao } from "./CipherObject"
 
 class AccountProvider {
     providerName: string = 'Undefined'
 }
 
 class AzureAccount extends AccountProvider {
-    providerName = 'Azure'
+    providerName = constants.AZURE_ACCOUNT_PROVIDER
 
     subscriptionId: string = '' // ARM_SUBSCRIPTION_ID
     clientId: string = '' // ARM_CLIENT_ID or app id
@@ -16,7 +16,7 @@ class AzureAccount extends AccountProvider {
 }
 
 class AzureAccountDao extends AccountProvider {
-    providerName = 'Azure'
+    providerName = constants.AZURE_ACCOUNT_PROVIDER
 
     subscriptionId: CipherDao = new CipherDao()
     clientId: CipherDao = new CipherDao()
@@ -26,17 +26,17 @@ class AzureAccountDao extends AccountProvider {
 }
 
 class GitAccount extends AccountProvider {
-    providerName = 'Git'
+    providerName = constants.GIT_ACCOUNT_PROVIDER
 
-    repositoryVendor: string = 'GitHub'
+    repositoryVendor: string = constants.GITHUB_REPOSITORY_VENDOR
     username: string = ''
     token: string = ''
 }
 
 class GitAccountDao extends AccountProvider {
-    providerName = 'Git'
+    providerName = constants.GIT_ACCOUNT_PROVIDER
 
-    repositoryVendor: string = 'GitHub'
+    repositoryVendor: string = constants.GITHUB_REPOSITORY_VENDOR
     username: CipherDao = new CipherDao()
     token: CipherDao = new CipherDao()
 }

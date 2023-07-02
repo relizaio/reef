@@ -56,32 +56,34 @@ const createInstance = async (siloId: string, templateId: string) => {
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
     if (instanceTemplate.record_data.providers.includes(ProviderType.AZURE)) {
         // locate azure account - TODO for now only single acct is supported
-        const azureActId = instanceTemplate.record_data.authAccounts[0]
-        const azureAct = await account.getAzureAccount(azureActId)
-
-        const initializeInstanceCmd =
-            `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
-            `cd ${constants.TF_SPACE}/${instanceId} && terraform init && terraform plan && terraform apply -auto-approve`
-        const initInstanceData = await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
-        console.log(initInstanceData)
-        const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
-        console.log(parsedInstanceOut)
-        const outInstanceProps : Property[] = []
-        Object.keys(parsedInstanceOut).forEach((key: string) => {
-            const sp : Property = {
-                key,
-                value: parsedInstanceOut[key]
+        const azureAct = await account.getAzureAccountFromSet(instanceTemplate.record_data.authAccounts)
+        if (azureAct) {
+            const initializeInstanceCmd =
+                `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+                `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
+                `cd ${constants.TF_SPACE}/${instanceId} && terraform init && terraform plan && terraform apply -auto-approve`
+            const initInstanceData = await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
+            console.log(initInstanceData)
+            const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
+            console.log(parsedInstanceOut)
+            const outInstanceProps : Property[] = []
+            Object.keys(parsedInstanceOut).forEach((key: string) => {
+                const sp : Property = {
+                    key,
+                    value: parsedInstanceOut[key]
+                }
+                outInstanceProps.push(sp)
+            })
+            const outInstance : Instance = {
+                id: instanceId,
+                status: constants.STATUS_ACTIVE,
+                silo_id: siloId,
+                properties: outInstanceProps
             }
-            outInstanceProps.push(sp)
-        })
-        const outInstance : Instance = {
-            id: instanceId,
-            status: constants.STATUS_ACTIVE,
-            silo_id: siloId,
-            properties: outInstanceProps
+            saveToDb(outInstance)
+        } else {
+            console.error('missing Azure account for template = ' + templateId)
         }
-        saveToDb(outInstance)
     }
     const allDoneTime = (new Date()).getTime()
     console.log("After TF instance create time = " + (allDoneTime - startTime))

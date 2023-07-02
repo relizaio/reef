@@ -47,41 +47,43 @@ async function createSilo (templateId: string, userVariables: Property[]) {
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        // locate azure account - TODO for now only single acct is supported
-        const azureActId = template.record_data.authAccounts[0]
-        const azureAct = await account.getAzureAccount(azureActId)
-        const siloTfVarsObj: any = {
-            silo_identifier: siloId
-        }
-        userVariables.forEach(prop => {
-            siloTfVarsObj[prop.key] = prop.value
-        })
-        const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
-        utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-        console.log(`Creating Azure Silo ${siloId}...`)
-        const initializeSiloCmd =
-            `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
-            `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
-        const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-        console.log(initSiloData)
-        const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : Property[] = userVariables.slice()
-        Object.keys(parsedSiloOut).forEach((key: string) => {
-            const sp : Property = {
-                key,
-                value: parsedSiloOut[key]
+        // locate azure account if present
+        const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
+        if (azureAct) {
+            const siloTfVarsObj: any = {
+                silo_identifier: siloId
             }
-            outSiloProps.push(sp)
-        })
-        const outSilo : Silo = {
-            id: siloId,
-            status: constants.STATUS_ACTIVE,
-            template_id: template.id,
-            properties: outSiloProps
+            userVariables.forEach(prop => {
+                siloTfVarsObj[prop.key] = prop.value
+            })
+            const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+            utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+            console.log(`Creating Azure Silo ${siloId}...`)
+            const initializeSiloCmd =
+                `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+                `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
+                `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+            const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+            const parsedSiloOut = utils.parseTfOutput(initSiloData)
+            const outSiloProps : Property[] = userVariables.slice()
+            Object.keys(parsedSiloOut).forEach((key: string) => {
+                const sp : Property = {
+                    key,
+                    value: parsedSiloOut[key]
+                }
+                outSiloProps.push(sp)
+            })
+            const outSilo : Silo = {
+                id: siloId,
+                status: constants.STATUS_ACTIVE,
+                template_id: template.id,
+                properties: outSiloProps
+            }
+            saveToDb(outSilo)
+            console.log(outSilo)
+        } else {
+            console.error('missing azure account for template = ' + template.id)
         }
-        saveToDb(outSilo)
-        console.log(outSilo)
     } else {
         console.warn(`unsupported template providers = ${template.record_data.providers}`)
     }
