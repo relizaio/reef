@@ -11,5 +11,10 @@
   "license": "MIT",
   "devDependencies": {
     "@cucumber/cucumber": "^9.2.0"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.7.16",
+    "graphql": "^16.7.1",
+    "react": "^18.2.0"
   }
 }
