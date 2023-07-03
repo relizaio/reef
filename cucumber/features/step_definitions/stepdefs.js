@@ -13,7 +13,6 @@ Given('I initialize scenario', async () => {
 });
 
 Then('I register Azure account', async () => {
-    // Write code here that turns the phrase above into concrete actions
     const gqlRes = await gqlClient
         .mutate({
             mutation: gql`
@@ -32,9 +31,28 @@ Then('I register Azure account', async () => {
 });
 
 
-Then('I register Silo template', function () {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
+Then('I register Silo template', async () => {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateSiloTemplate($templateInput: TemplateInput!) {
+                    createTemplate(templateInput: $templateInput) {
+                        id
+                    }
+                }`,
+            variables: {
+                "templateInput": {
+                    "providers": ["AZURE"],
+                    "repoPath": "terraform_templates/silos/azure_k3s_vnet_silo",
+                    "repoPointer": "main",
+                    "repoUrl": "https://github.com/relizaio/reliza-ephemeral-framework.git",
+                    "type": "SILO",
+                    "authAccounts": [scenarioContext.azureAccount]
+                }
+            }
+        })
+    scenarioContext.siloTemplate = gqlRes.data.createTemplate.id
+    assert.ok(scenarioContext.siloTemplate && scenarioContext.siloTemplate.length > 0, "failed to register silo template")
 });
 
 Then('I register Instance template', function () {
