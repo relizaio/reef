@@ -80,9 +80,27 @@ Then('I register Instance template', async () => {
 });
 
 
-Then('I create Silo', function () {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
+Then('I create Silo', async () => {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateSilo($templateId: ID!, $userVariables: [KeyValueInput]) {
+                    createSilo(templateId: $templateId, userVariables: $userVariables) {
+                        id
+                    }
+                }`,
+            variables: {
+                "templateId": scenarioContext.siloTemplate,
+                "userVariables": [
+                    {
+                        "key": "resource_group_name",
+                        "value": testVars.azureAccount.resourceGroupName
+                    }
+                ]
+            }
+        })
+    scenarioContext.siloId = gqlRes.data.createSilo.id
+    assert.ok(scenarioContext.siloId && scenarioContext.siloId.length > 0, "failed to create silo")
 });
 
 
