@@ -15,5 +15,12 @@ const testVars = {
     }
 }
 
+function initScenarioContext () {
+    return {
+        azureAccountId: ""
+    }
+}
+
 exports.gqlClient = gqlClient
 exports.testVars = testVars
+exports.initScenarioContext = initScenarioContext

@@ -2,9 +2,17 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
 const { gql } = require('@apollo/client');
-const { gqlClient, testVars } = require('../utils')
+const { gqlClient, testVars, initScenarioContext } = require('../utils')
 
-Given('I register Azure account', async () => {
+var scenarioContext = {}
+
+Given('I initialize scenario', async () => {
+    // Write code here that turns the phrase above into concrete actions
+    scenarioContext = initScenarioContext()
+    assert.ok(Object.keys(scenarioContext).length > 0, "missing scenario context")
+});
+
+Then('I register Azure account', async () => {
     // Write code here that turns the phrase above into concrete actions
     const gqlRes = await gqlClient
         .mutate({
@@ -19,8 +27,8 @@ Given('I register Azure account', async () => {
             }
 
         })
-    console.log(gqlRes)
-    return 'pending';
+    scenarioContext.azureAccount = gqlRes.data.createAzureAccount.id
+    assert.ok(scenarioContext.azureAccount && scenarioContext.azureAccount.length > 0, "failed to register azure account")
 });
 
 
