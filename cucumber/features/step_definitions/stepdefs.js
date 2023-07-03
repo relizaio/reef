@@ -55,9 +55,28 @@ Then('I register Silo template', async () => {
     assert.ok(scenarioContext.siloTemplate && scenarioContext.siloTemplate.length > 0, "failed to register silo template")
 });
 
-Then('I register Instance template', function () {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
+Then('I register Instance template', async () => {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateInstanceTemplate($templateInput: TemplateInput!) {
+                    createTemplate(templateInput: $templateInput) {
+                        id
+                    }
+                }`,
+            variables: {
+                "templateInput": {
+                    "providers": ["AZURE"],
+                    "repoPath": "terraform_templates/instances/azure_k3s_instance",
+                    "repoPointer": "main",
+                    "repoUrl": "https://github.com/relizaio/reliza-ephemeral-framework.git",
+                    "type": "INSTANCE",
+                    "authAccounts": [scenarioContext.azureAccount]
+                }
+            }
+        })
+    scenarioContext.instanceTemplate = gqlRes.data.createTemplate.id
+    assert.ok(scenarioContext.instanceTemplate && scenarioContext.instanceTemplate.length > 0, "failed to register instance template")
 });
 
 

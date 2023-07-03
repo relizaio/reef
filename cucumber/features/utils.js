@@ -17,7 +17,9 @@ const testVars = {
 
 function initScenarioContext () {
     return {
-        azureAccountId: ""
+        azureAccountId: "",
+        siloTemplate: "",
+        instanceTemplate: ""
     }
 }
 
