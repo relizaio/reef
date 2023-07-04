@@ -9,6 +9,8 @@ services:
      - ref-postgresql
     ports:
      - "4002:4001"
+    volumes:
+      - "tfspace-data:/app/tf_space"
   ref-postgres-init:
     image: 'flyway/flyway:9-alpine'
     restart: on-failure
@@ -29,3 +31,11 @@ services:
     image: postgres:15
     environment:
      - POSTGRES_PASSWORD=password
+    volumes:
+      - "pg-data:/var/lib/postgresql/data"
+
+volumes:
+  pg-data:
+    driver: local
+  tfspace-data:
+    driver: local
