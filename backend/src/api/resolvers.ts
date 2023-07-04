@@ -9,9 +9,9 @@ import { AzureAccount, GitAccount } from '../model/Account'
 const resolvers = {
     Query: {
         hello: () => 'world',
-        getSilo: (parent: any, params: any) => {
+        getSilo: async (parent: any, params: any) => {
             const siloId : string = params.siloId
-            return silo.getSilo(siloId)
+            return await silo.getSilo(siloId)
         }
     },
     Mutation: {
