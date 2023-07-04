@@ -4,6 +4,7 @@ export default {
     GITHUB_REPOSITORY_VENDOR: "GITHUB",
     STATUS_ACTIVE: "ACTIVE",
     STATUS_ARCHIVED: "ARCHIVED",
+    STATUS_PENDING: "PENDING",
     TF_DEFAULT_TFVARS_FILE: "terraform.tfvars.json",
     SILO_PREFIX: "silo-",
     INSTANCE_PREFIX: "instance-",

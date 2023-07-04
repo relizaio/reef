@@ -6,8 +6,9 @@ import constants from '../utils/constants'
 import * as templateService from './template'
 import { ProviderType } from '../model/Template'
 import account from './account'
+import { AzureAccount } from '../model/Account'
 
-const saveToDb = async (silo: Silo) => {
+async function saveToDb (silo: Silo) {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
     const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, properties) values ($1, $2, $3, $4) RETURNING *`
     const queryParams = [siloUuidForDb, silo.status, silo.template_id, JSON.stringify(silo.properties)]
@@ -15,7 +16,15 @@ const saveToDb = async (silo: Silo) => {
     return queryRes.rows[0]
 }
 
-const archiveSiloInDb = async (siloId: string) => {
+async function updateSiloDbRecord (silo: Silo) {
+    const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
+    const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, properties = $3 where uuid = $4 RETURNING *`
+    const queryParams = [silo.status, silo.template_id, JSON.stringify(silo.properties), siloUuidForDb]
+    const queryRes = await runQuery(queryText, queryParams)
+    return queryRes.rows[0]
+}
+
+async function archiveSiloInDb (siloId: string) {
     const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     const queryText = `UPDATE ${schema}.silos SET status = $1, last_updated_date = now() where uuid = $2`
     const queryParams = [constants.STATUS_ARCHIVED, siloUuidForDb]
@@ -37,8 +46,8 @@ const getSilo = async (siloId: string) : Promise<Silo> => {
     return silo
 }
 
-async function createSilo (templateId: string, userVariables: Property[]) {
-    let startTime = (new Date()).getTime()
+async function createSilo (templateId: string, userVariables: Property[]) : Promise<Silo | null> {
+    let respSilo : Silo | null = null
     const siloId = constants.SILO_PREFIX + utils.uuidv4()
     const template = await templateService.default.getTemplate(templateId)
     const gco = await templateService.default.gitCheckoutObjectFromTemplate(template)
@@ -50,48 +59,65 @@ async function createSilo (templateId: string, userVariables: Property[]) {
         // locate azure account if present
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
-            const siloTfVarsObj: any = {
-                silo_identifier: siloId
-            }
-            userVariables.forEach(prop => {
-                siloTfVarsObj[prop.key] = prop.value
-            })
-            const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
-            utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-            console.log(`Creating Azure Silo ${siloId}...`)
-            const initializeSiloCmd =
-                `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-                `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
-                `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
-            const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-            const parsedSiloOut = utils.parseTfOutput(initSiloData)
-            const outSiloProps : Property[] = userVariables.slice()
-            Object.keys(parsedSiloOut).forEach((key: string) => {
-                const sp : Property = {
-                    key,
-                    value: parsedSiloOut[key]
-                }
-                outSiloProps.push(sp)
-            })
-            const outSilo : Silo = {
-                id: siloId,
-                status: constants.STATUS_ACTIVE,
-                template_id: template.id,
-                properties: outSiloProps
-            }
-            saveToDb(outSilo)
-            console.log(outSilo)
+            respSilo = await createPendingSiloInDb(siloId, templateId)
+            createAzureSiloTfRoutine(siloId, template.id, azureAct, userVariables)
         } else {
             console.error('missing azure account for template = ' + template.id)
         }
     } else {
         console.warn(`unsupported template providers = ${template.record_data.providers}`)
     }
+    return respSilo
+}
+
+async function createPendingSiloInDb(siloId: string, templateId: string) {
+    const pendingSilo : Silo = {
+        id: siloId,
+        status: constants.STATUS_PENDING,
+        template_id: templateId,
+        properties: []
+    }
+    await saveToDb(pendingSilo)
+    return pendingSilo
+}
+
+async function createAzureSiloTfRoutine (siloId: string, templateId: string, azureAct : AzureAccount, userVariables: Property[]) {
+    const startTime = (new Date()).getTime()
+    const siloTfVarsObj: any = {
+        silo_identifier: siloId
+    }
+    userVariables.forEach(prop => {
+        siloTfVarsObj[prop.key] = prop.value
+    })
+    const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+    utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+    console.log(`Creating Azure Silo ${siloId}...`)
+    const initializeSiloCmd =
+        `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+        `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
+        `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+    const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+    const parsedSiloOut = utils.parseTfOutput(initSiloData)
+    const outSiloProps : Property[] = userVariables.slice()
+    Object.keys(parsedSiloOut).forEach((key: string) => {
+        const sp : Property = {
+            key,
+            value: parsedSiloOut[key]
+        }
+        outSiloProps.push(sp)
+    })
+    const outSilo : Silo = {
+        id: siloId,
+        status: constants.STATUS_ACTIVE,
+        template_id: templateId,
+        properties: outSiloProps
+    }
+    updateSiloDbRecord(outSilo)
     const allDoneTime = (new Date()).getTime()
     console.log("After TF silo create time = " + (allDoneTime - startTime))
 }
 
-const destroySilo = async (siloId: string) => {
+async function destroySilo (siloId: string) {
     let startTime = (new Date()).getTime()
     console.log(`Destroying TF Silo ${siloId}...`)
     const silo = await getSilo(siloId)

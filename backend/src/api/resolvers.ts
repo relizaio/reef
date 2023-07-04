@@ -15,11 +15,10 @@ const resolvers = {
         }
     },
     Mutation: {
-        createSilo: (parent: any, params: any) => {
+        createSilo: async (parent: any, params: any) => {
             const templateId = params.templateId
             const userVariables : Property[] = params.userVariables
-            silo.createSilo(templateId, userVariables)
-            return true
+            return await silo.createSilo(templateId, userVariables)
         },
         destroySilo: (parent: any, params: any) => {
             const siloId : string = params.siloId
