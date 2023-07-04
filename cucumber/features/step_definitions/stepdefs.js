@@ -108,3 +108,18 @@ Then('I create Instance', function () {
     // Write code here that turns the phrase above into concrete actions
     return 'pending';
 });
+
+
+Given('I delete {string} silo', async (string) => {
+    await gqlClient
+    .mutate({
+        mutation: gql`
+            mutation DestroySilo($siloId: ID!) {
+                destroySilo(siloId: $siloId)
+            }`,
+        variables: {
+            "siloId": string
+        }
+    })
+    assert.ok(true, "destroy silo failed")
+});

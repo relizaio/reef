@@ -1,3 +1,4 @@
+@createSilo
 Feature: Spin Azure Silo and Instance
 
     Scenario: Spin Azure Silo and Instance off Pub Git Repo
