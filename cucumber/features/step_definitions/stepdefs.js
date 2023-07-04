@@ -2,7 +2,7 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
 const { gql } = require('@apollo/client');
-const { gqlClient, testVars, initScenarioContext } = require('../utils')
+const { gqlClient, testVars, initScenarioContext, sleep } = require('../utils')
 
 var scenarioContext = {}
 
@@ -103,6 +103,36 @@ Then('I create Silo', async () => {
     assert.ok(scenarioContext.siloId && scenarioContext.siloId.length > 0, "failed to create silo")
 });
 
+
+Then('I wait for Silo to become Active', {timeout: 7 * 60 * 1000}, async () => {
+    const timeout = 5 * 60 * 1000 // 5 minutes
+    const startTime = (new Date()).getTime()
+    let status = undefined
+    console.log('Waiting for Silo to be created, this may take several minutes, timeout is set to 5 minutes...')
+    while (status !== 'ACTIVE' &&  (new Date()).getTime() - startTime < timeout) {
+        const gqlRes = await gqlClient
+            .query({
+                query: gql`
+                    query GetSilo($siloId: ID!) {
+                        getSilo(siloId: $siloId) {
+                            status
+                        }
+                    }`,
+                variables: {
+                    "siloId": scenarioContext.siloId
+                },
+                fetchPolicy: 'no-cache'
+            })
+        status = gqlRes.data.getSilo.status
+        console.log(gqlRes.data)
+        if (status !== 'ACTIVE') {
+            await sleep(1000)
+        } else {
+            console.log('Resolved Silo status as active')
+        }
+    }
+    assert.strictEqual(status, 'ACTIVE', 'Silo still not active after 5 minutes')
+  });
 
 Then('I create Instance', function () {
     // Write code here that turns the phrase above into concrete actions

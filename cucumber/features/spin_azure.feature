@@ -7,4 +7,5 @@ Feature: Spin Azure Silo and Instance
         Then I register Silo template
         Then I register Instance template
         Then I create Silo
+        Then I wait for Silo to become Active
         Then I create Instance
