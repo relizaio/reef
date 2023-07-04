@@ -30,3 +30,29 @@ docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgre
 cd backend
 node --loader tsx --test tests/test2.ts
 ```
+
+### Run cucumber tests:
+Create test wrapper, such as following, and run from cucumber directory:
+
+```
+#!/bin/bash
+export REF_TEST_AZURE_CLIENTID="123"
+export REF_TEST_AZURE_CLIENTSECRET="123"
+export REF_TEST_AZURE_RESOURCEGROUPNAME="123"
+export REF_TEST_AZURE_SUBSCRIPTIONID="123"
+export REF_TEST_AZURE_TENANTID="123"
+npm test
+```
+
+To run a single feature / scenario by tag, use wrapper as following:
+
+
+```
+#!/bin/bash
+export REF_TEST_AZURE_CLIENTID="123"
+export REF_TEST_AZURE_CLIENTSECRET="123"
+export REF_TEST_AZURE_RESOURCEGROUPNAME="123"
+export REF_TEST_AZURE_SUBSCRIPTIONID="123"
+export REF_TEST_AZURE_TENANTID="123"
+node_modules/@cucumber/cucumber/bin/cucumber-js --tags "@deleteSilo"
+```
