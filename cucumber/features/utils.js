@@ -1,7 +1,7 @@
 const { ApolloClient, InMemoryCache, ApolloProvider, gql } = require('@apollo/client')
 
 const gqlClient = new ApolloClient({
-    uri: 'http://localhost:4002/',
+    uri: 'http://localhost:4001/',
     cache: new InMemoryCache(),
 })
 
@@ -23,6 +23,27 @@ function initScenarioContext () {
     }
 }
 
+function sleep (ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
+
+async function deleteSilo (siloId) {
+    await gqlClient
+    .mutate({
+        mutation: gql`
+            mutation DestroySilo($siloId: ID!) {
+                destroySilo(siloId: $siloId)
+            }`,
+        variables: {
+            "siloId": siloId
+        }
+    })
+}
+
 exports.gqlClient = gqlClient
 exports.testVars = testVars
 exports.initScenarioContext = initScenarioContext
+exports.sleep = sleep
+exports.deleteSilo = deleteSilo

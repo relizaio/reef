@@ -1,5 +1,10 @@
-@deleteSilo
+
 Feature: Delete Azure Silo and Instance
 
+    @deleteSilo
     Scenario: Delete Azure Silo and Instance
-        Given I delete "silo-ef31785f-fd3c-408c-bf53-e706d9f21af1" silo
+        Given I delete "silo-680541f8-812b-4158-a79d-da481e2a970c" silo
+
+    @deleteAllSilos
+    Scenario: Delete all Azure Silos
+        Given I delete all silos

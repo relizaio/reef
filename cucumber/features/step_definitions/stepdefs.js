@@ -2,7 +2,7 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
 const { gql } = require('@apollo/client');
-const { gqlClient, testVars, initScenarioContext, sleep } = require('../utils')
+const { gqlClient, testVars, initScenarioContext, sleep, deleteSilo } = require('../utils')
 
 var scenarioContext = {}
 
@@ -141,15 +141,23 @@ Then('I create Instance', function () {
 
 
 Given('I delete {string} silo', async (string) => {
-    await gqlClient
-    .mutate({
-        mutation: gql`
-            mutation DestroySilo($siloId: ID!) {
-                destroySilo(siloId: $siloId)
-            }`,
-        variables: {
-            "siloId": string
-        }
-    })
+    await deleteSilo(string)
     assert.ok(true, "destroy silo failed")
-});
+})
+
+Given('I delete all silos', {timeout: 20 * 60 * 1000}, async () => {
+    const allSiloResp = await gqlClient
+    .query({
+        query: gql`
+            query GetAllActiveSilos {
+                getAllActiveSilos {
+                    id
+                }
+            }`
+    })
+    console.log(`deleting ${allSiloResp.data.getAllActiveSilos.length} silos`)
+    for (silo of allSiloResp.data.getAllActiveSilos) {
+        await deleteSilo(silo.id)
+    }
+    assert.ok(true, "destroying silos failed")
+})
