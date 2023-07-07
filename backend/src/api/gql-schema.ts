@@ -9,7 +9,7 @@ const typeDefs = gql`
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
         destroySilo(siloId: ID!): Boolean,
-        createInstance(siloId: ID!, templateId: ID!): Boolean,
+        createInstance(siloId: ID!, templateId: ID!): Instance,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
         createAzureAccount(azureAccount: AzureAccountInput!): AccountId,
@@ -55,6 +55,11 @@ const typeDefs = gql`
         id: String
     },
     type Silo {
+        id: ID!
+        status: String
+        properties: [KeyValue]
+    },
+    type Instance {
         id: ID!
         status: String
         properties: [KeyValue]

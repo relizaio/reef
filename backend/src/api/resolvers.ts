@@ -28,11 +28,10 @@ const resolvers = {
             silo.destroySilo(siloId)
             return true
         },
-        createInstance: (parent: any, params: any) => {
+        createInstance: async (parent: any, params: any) => {
             const siloId : string = params.siloId
             const templateId : string = params.templateId
-            instance.createInstance(siloId, templateId)
-            return true
+            return await instance.createInstance(siloId, templateId)
         },
         destroyInstance: (parent: any, params: any) => {
             const instanceId : string = params.instanceId
