@@ -32,18 +32,28 @@ async function archiveSiloInDb (siloId: string) {
     return queryRes.rows[0]
 }
 
-const getSilo = async (siloId: string) : Promise<Silo> => {
+function transformDbRowToSilo(dbRow: any): Silo {
+    const silo : Silo = {
+        id: constants.SILO_PREFIX + dbRow.uuid,
+        status: dbRow.status,
+        template_id: dbRow.template_id,
+        properties: dbRow.properties
+    }
+    return silo
+}
+
+async function getSilo (siloId: string) : Promise<Silo> {
     const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     const queryText = `SELECT * FROM ${schema}.silos where uuid = $1`
     const queryParams = [siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
-    const silo : Silo = {
-        id: queryRes.rows[0].uuid,
-        status: queryRes.rows[0].status,
-        template_id: queryRes.rows[0].template_id,
-        properties: queryRes.rows[0].properties
-    }
-    return silo
+    return transformDbRowToSilo(queryRes.rows[0])
+}
+
+async function getAllActiveSilos () : Promise<Silo[]> {
+    const queryText = `SELECT * FROM ${schema}.silos where status = 'ACTIVE'`
+    const queryRes = await runQuery(queryText, [])
+    return queryRes.rows.map((r: any) => transformDbRowToSilo(r))
 }
 
 async function createSilo (templateId: string, userVariables: Property[]) : Promise<Silo | null> {
@@ -145,5 +155,6 @@ async function destroySilo (siloId: string) {
 export default {
     createSilo,
     destroySilo,
+    getAllActiveSilos,
     getSilo
 }

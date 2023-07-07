@@ -12,6 +12,9 @@ const resolvers = {
         getSilo: async (parent: any, params: any) => {
             const siloId : string = params.siloId
             return await silo.getSilo(siloId)
+        },
+        getAllActiveSilos: async () => {
+            return await silo.getAllActiveSilos()
         }
     },
     Mutation: {

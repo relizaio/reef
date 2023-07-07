@@ -3,7 +3,8 @@ import gql from 'graphql-tag'
 const typeDefs = gql`
     type Query {
         hello: String,
-        getSilo(siloId: ID!): Silo
+        getSilo(siloId: ID!): Silo,
+        getAllActiveSilos: [Silo]
     },
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
