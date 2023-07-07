@@ -124,7 +124,6 @@ Then('I wait for Silo to become Active', {timeout: 7 * 60 * 1000}, async () => {
                 fetchPolicy: 'no-cache'
             })
         status = gqlRes.data.getSilo.status
-        console.log(gqlRes.data)
         if (status !== 'ACTIVE') {
             await sleep(1000)
         } else {
@@ -134,10 +133,23 @@ Then('I wait for Silo to become Active', {timeout: 7 * 60 * 1000}, async () => {
     assert.strictEqual(status, 'ACTIVE', 'Silo still not active after 5 minutes')
   });
 
-Then('I create Instance', function () {
-    // Write code here that turns the phrase above into concrete actions
-    return 'pending';
-});
+Then('I create Instance', async () =>  {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateInstance($siloId: ID!, $templateId: ID!) {
+                    createInstance(siloId: $siloId, templateId: $templateId) {
+                        id
+                    }
+                }`,
+            variables: {
+                "templateId": scenarioContext.instanceTemplate,
+                "siloId": scenarioContext.siloId
+            }
+        })
+    scenarioContext.instanceId = gqlRes.data.createInstance.id
+    assert.ok(scenarioContext.instanceId && scenarioContext.instanceId.length > 0, "failed to create instance")
+})
 
 
 Given('I delete {string} silo', async (string) => {
