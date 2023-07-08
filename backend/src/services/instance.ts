@@ -147,10 +147,24 @@ async function createAzureInstanceTfRoutine (azureAct: AzureAccount, instanceId:
 const destroyInstance = async (instanceId: string) => {
     let startTime = (new Date()).getTime()
     console.log(`Destroying TF instance ${instanceId}...`)
-    const instanceDestroyCmd = `cd ${constants.TF_SPACE}/${instanceId} && terraform destroy -auto-approve`
-    await utils.shellExec('sh', ['-c', instanceDestroyCmd])
-    await utils.deleteDir(`${constants.TF_SPACE}/${instanceId}`)
-    archiveInDb(instanceId)
+    const instance = await getInstance(instanceId)
+    const template = await templateService.default.getTemplate(instance.template_id)
+    if (template.record_data.providers.includes(ProviderType.AZURE)) {
+        // locate azure account if present
+        const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
+        if (azureAct) {
+            const instanceDestroyCmd = `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId};` + 
+            `cd ${constants.TF_SPACE}/${instanceId} && terraform destroy -auto-approve`
+            await utils.shellExec('sh', ['-c', instanceDestroyCmd])
+        await utils.deleteDir(`${constants.TF_SPACE}/${instanceId}`)
+        archiveInDb(instanceId)
+        } else {
+            console.error('Could not locate azure account')
+        }
+    } else {
+        console.error('Unsupported account encountered when destroying silo')
+    }
     const allDoneTime = (new Date()).getTime()
     console.log("After TF instance destroy time = " + (allDoneTime - startTime))
 }
