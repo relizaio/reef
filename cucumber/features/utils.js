@@ -30,6 +30,13 @@ function sleep (ms) {
 }
 
 async function deleteSilo (siloId) {
+    const instances = await getInstancesOfSilo(siloId)
+    if (instances && instances.length) {
+        for (const i of instances) {
+            await deleteInstance(i.id)
+            await waitForInstanceStatus(i.id, 'ARCHIVED')
+        }
+    }
     await gqlClient
     .mutate({
         mutation: gql`
@@ -53,6 +60,50 @@ async function deleteInstance (instanceId) {
             "instanceId": instanceId
         }
     })
+}
+
+async function getInstancesOfSilo (siloId) {
+    const resData = await gqlClient
+        .query({
+            query: gql`
+                query GetInstancesOfSilo($siloId: ID!) {
+                    getInstancesOfSilo(siloId: $siloId) {
+                        id
+                        status
+                    }
+                }`,
+            variables: {
+                "siloId": siloId
+            }
+        })
+    return resData.data.getInstancesOfSilo
+}
+
+async function waitForInstanceStatus (instanceId, expectedStatus) {
+    const timeout = 5 * 60 * 1000 // 5 minutes
+    const startTime = (new Date()).getTime()
+    let actualStatus = undefined
+    while (actualStatus !== expectedStatus &&  (new Date()).getTime() - startTime < timeout) {
+        const gqlRes = await gqlClient
+            .query({
+                query: gql`
+                    query GetInstance($instanceId: ID!) {
+                        getInstance(instanceId: $instanceId) {
+                            status
+                        }
+                    }`,
+                variables: {
+                    "instanceId": instanceId
+                },
+                fetchPolicy: 'no-cache'
+            })
+        actualStatus = gqlRes.data.getInstance.status
+        if (actualStatus !== expectedStatus) {
+            await sleep(1000)
+        } else {
+            console.log(`Resolved Instance status as ${actualStatus}`)
+        }
+    }
 }
 
 exports.gqlClient = gqlClient
