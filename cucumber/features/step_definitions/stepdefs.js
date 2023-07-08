@@ -2,7 +2,7 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
 const { gql } = require('@apollo/client');
-const { gqlClient, testVars, initScenarioContext, sleep, deleteSilo, deleteInstance } = require('../utils')
+const { gqlClient, testVars, initScenarioContext, deleteSilo, deleteInstance, waitForSiloStatus, waitForInstanceStatus } = require('../utils')
 
 var scenarioContext = {}
 
@@ -105,33 +105,16 @@ Then('I create Silo', async () => {
 
 
 Then('I wait for Silo to become Active', {timeout: 7 * 60 * 1000}, async () => {
-    const timeout = 5 * 60 * 1000 // 5 minutes
-    const startTime = (new Date()).getTime()
-    let status = undefined
     console.log('Waiting for Silo to be created, this may take several minutes, timeout is set to 5 minutes...')
-    while (status !== 'ACTIVE' &&  (new Date()).getTime() - startTime < timeout) {
-        const gqlRes = await gqlClient
-            .query({
-                query: gql`
-                    query GetSilo($siloId: ID!) {
-                        getSilo(siloId: $siloId) {
-                            status
-                        }
-                    }`,
-                variables: {
-                    "siloId": scenarioContext.siloId
-                },
-                fetchPolicy: 'no-cache'
-            })
-        status = gqlRes.data.getSilo.status
-        if (status !== 'ACTIVE') {
-            await sleep(1000)
-        } else {
-            console.log('Resolved Silo status as active')
-        }
-    }
+    const status = await waitForSiloStatus(scenarioContext.siloId, 'ACTIVE')
     assert.strictEqual(status, 'ACTIVE', 'Silo still not active after 5 minutes')
-  });
+})
+
+Then('I wait for Instance to become Active', {timeout: 7 * 60 * 1000}, async () => {
+    console.log('Waiting for Instance to be created, this may take several minutes, timeout is set to 5 minutes...')
+    const status = await waitForInstanceStatus(scenarioContext.instanceId, 'ACTIVE')
+    assert.strictEqual(status, 'ACTIVE', 'Instance still not active after 5 minutes')
+})
 
 Then('I create Instance', async () =>  {
     const gqlRes = await gqlClient
@@ -149,6 +132,11 @@ Then('I create Instance', async () =>  {
         })
     scenarioContext.instanceId = gqlRes.data.createInstance.id
     assert.ok(scenarioContext.instanceId && scenarioContext.instanceId.length > 0, "failed to create instance")
+})
+
+Then('I delete Silo', {timeout: 7 * 60 * 1000}, async () => {
+    await deleteSilo(scenarioContext.siloId)
+    assert.ok(true, "destroy silo failed")
 })
 
 

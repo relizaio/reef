@@ -9,3 +9,5 @@ Feature: Spin Azure Silo and Instance
         Then I create Silo
         Then I wait for Silo to become Active
         Then I create Instance
+        Then I wait for Instance to become Active
+        Then I delete Silo

@@ -32,6 +32,7 @@ function sleep (ms) {
 async function deleteSilo (siloId) {
     const instances = await getInstancesOfSilo(siloId)
     if (instances && instances.length) {
+        console.log(`deleting ${instances.length} instances from silo ${siloId}`)
         for (const i of instances) {
             await deleteInstance(i.id)
             await waitForInstanceStatus(i.id, 'ARCHIVED')
@@ -47,6 +48,7 @@ async function deleteSilo (siloId) {
             "siloId": siloId
         }
     })
+    await waitForSiloStatus(siloId, 'ARCHIVED')
 }
 
 async function deleteInstance (instanceId) {
@@ -104,6 +106,35 @@ async function waitForInstanceStatus (instanceId, expectedStatus) {
             console.log(`Resolved Instance status as ${actualStatus}`)
         }
     }
+    return actualStatus
+}
+
+async function waitForSiloStatus (siloId, expectedStatus) {
+    const timeout = 5 * 60 * 1000 // 5 minutes
+    const startTime = (new Date()).getTime()
+    let actualStatus = undefined
+    while (actualStatus !== expectedStatus &&  (new Date()).getTime() - startTime < timeout) {
+        const gqlRes = await gqlClient
+            .query({
+                query: gql`
+                    query GetSilo($siloId: ID!) {
+                        getSilo(siloId: $siloId) {
+                            status
+                        }
+                    }`,
+                variables: {
+                    "siloId": siloId
+                },
+                fetchPolicy: 'no-cache'
+            })
+        actualStatus = gqlRes.data.getSilo.status
+        if (actualStatus !== expectedStatus) {
+            await sleep(1000)
+        } else {
+            console.log(`Resolved Silo status as ${actualStatus}`)
+        }
+    }
+    return actualStatus
 }
 
 exports.gqlClient = gqlClient
@@ -112,3 +143,5 @@ exports.initScenarioContext = initScenarioContext
 exports.sleep = sleep
 exports.deleteSilo = deleteSilo
 exports.deleteInstance = deleteInstance
+exports.waitForSiloStatus = waitForSiloStatus
+exports.waitForInstanceStatus = waitForInstanceStatus
