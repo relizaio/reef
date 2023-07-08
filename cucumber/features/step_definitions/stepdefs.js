@@ -2,7 +2,7 @@ const assert = require('assert');
 const { Given, When, Then } = require('@cucumber/cucumber');
 
 const { gql } = require('@apollo/client');
-const { gqlClient, testVars, initScenarioContext, sleep, deleteSilo } = require('../utils')
+const { gqlClient, testVars, initScenarioContext, sleep, deleteSilo, deleteInstance } = require('../utils')
 
 var scenarioContext = {}
 
@@ -155,6 +155,11 @@ Then('I create Instance', async () =>  {
 Given('I delete {string} silo', async (string) => {
     await deleteSilo(string)
     assert.ok(true, "destroy silo failed")
+})
+
+Given('I delete {string} instance', async (string) => {
+    await deleteInstance(string)
+    assert.ok(true, "destroy instance failed")
 })
 
 Given('I delete all silos', {timeout: 20 * 60 * 1000}, async () => {

@@ -42,8 +42,22 @@ async function deleteSilo (siloId) {
     })
 }
 
+async function deleteInstance (instanceId) {
+    await gqlClient
+    .mutate({
+        mutation: gql`
+            mutation DestroyInstance($instanceId: ID!) {
+                destroyInstance(instanceId: $instanceId)
+            }`,
+        variables: {
+            "instanceId": instanceId
+        }
+    })
+}
+
 exports.gqlClient = gqlClient
 exports.testVars = testVars
 exports.initScenarioContext = initScenarioContext
 exports.sleep = sleep
 exports.deleteSilo = deleteSilo
+exports.deleteInstance = deleteInstance
