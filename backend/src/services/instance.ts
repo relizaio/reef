@@ -9,6 +9,34 @@ import { runQuery, schema } from '../utils/pgUtils'
 import { ProviderType } from '../model/Template'
 import { AzureAccount } from '../model/Account'
 
+
+async function getInstance (instanceId: string) : Promise<Instance> {
+    const instanceUuidForDb = instanceId.replace(constants.INSTANCE_PREFIX, '')
+    const queryText = `SELECT * FROM ${schema}.instances where uuid = $1`
+    const queryParams = [instanceUuidForDb]
+    const queryRes = await runQuery(queryText, queryParams)
+    return transformDbRowToInstance(queryRes.rows[0])
+}
+
+async function getInstancesOfSilo (siloId: string) : Promise<Instance[]> {
+    const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
+    const queryText = `SELECT * FROM ${schema}.instances where silo_id = $1`
+    const queryParams = [siloUuidForDb]
+    const queryRes = await runQuery(queryText, queryParams)
+    return queryRes.rows.map((r: any) => transformDbRowToInstance(r))
+}
+
+function transformDbRowToInstance(dbRow: any): Instance {
+    const instance : Instance = {
+        id: constants.INSTANCE_PREFIX + dbRow.uuid,
+        status: dbRow.status,
+        template_id: dbRow.template_id,
+        silo_id: dbRow.silo_id,
+        properties: dbRow.properties
+    }
+    return instance
+}
+
 async function saveToDb (instance: Instance) {
     const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
     const siloUuidForDb = instance.silo_id.replace(constants.SILO_PREFIX, '')
@@ -128,6 +156,8 @@ const destroyInstance = async (instanceId: string) => {
 }
 
 export default {
+    getInstance,
     createInstance,
-    destroyInstance
+    destroyInstance,
+    getInstancesOfSilo
 }

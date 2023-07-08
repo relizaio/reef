@@ -4,7 +4,9 @@ const typeDefs = gql`
     type Query {
         hello: String,
         getSilo(siloId: ID!): Silo,
-        getAllActiveSilos: [Silo]
+        getInstance(instanceId: ID!): Instance,
+        getAllActiveSilos: [Silo],
+        getInstancesOfSilo(siloId: ID!): [Instance]
     },
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,

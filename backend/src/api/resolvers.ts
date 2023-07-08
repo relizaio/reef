@@ -13,9 +13,17 @@ const resolvers = {
             const siloId : string = params.siloId
             return await silo.getSilo(siloId)
         },
+        getInstance: async (parent: any, params: any) => {
+            const instanceId : string = params.instanceId
+            return await instance.getInstance(instanceId)
+        },
         getAllActiveSilos: async () => {
             return await silo.getAllActiveSilos()
-        }
+        },
+        getInstancesOfSilo: async (parent: any, params: any) => {
+            const siloId : string = params.siloId
+            return await instance.getInstancesOfSilo(siloId)
+        },
     },
     Mutation: {
         createSilo: async (parent: any, params: any) => {
