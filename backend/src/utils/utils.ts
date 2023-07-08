@@ -172,9 +172,9 @@ async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
         utilPath = `./${constants.TF_SPACE}/${constants.CRED_PREFIX}${gitCheckoutId}`
         await fsp.mkdir(utilPath)
         await shellExec('sh', ['-c', `echo "#!/bin/sh" >> ${utilPath}/askpass.sh`], 30*1000)
-        await shellExec('sh', ['-c', `exec echo "${gco.token}" >> ${utilPath}/askpass.sh`], 30*1000)
+        await shellExec('sh', ['-c', `echo 'exec echo "${gco.token}"' >> ${utilPath}/askpass.sh`], 30*1000)
         await shellExec('sh', ['-c', `chmod 0700 ${utilPath}/askpass.sh`], 30*1000)
-        const gitConfigTokenCmd = `cd ${checkoutPath} && git config --local core.askpass "${utilPath}/askpass.sh"`
+        const gitConfigTokenCmd = `cd ${checkoutPath} && git config --local core.askpass "../../${utilPath}/askpass.sh"`
         await shellExec('sh', ['-c', gitConfigTokenCmd], 30*1000)
     }
     if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
