@@ -6,10 +6,28 @@ const { gqlClient, testVars, initScenarioContext, deleteSilo, deleteInstance, wa
 
 var scenarioContext = {}
 
-Given('I initialize scenario', async () => {
+Given('I initialize {string} scenario', async (string) => {
     // Write code here that turns the phrase above into concrete actions
-    scenarioContext = initScenarioContext()
+    scenarioContext = initScenarioContext(string)
     assert.ok(Object.keys(scenarioContext).length > 0, "missing scenario context")
+});
+
+Then('I register Git account', async () => {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateGitAccount($gitAccount: GitAccountInput!) {
+                    createGitAccount(gitAccount: $gitAccount) {
+                        id
+                    }
+                }`,
+            variables: {
+                "gitAccount": testVars.gitAccount
+            }
+
+        })
+    scenarioContext.gitAccount = gqlRes.data.createGitAccount.id
+    assert.ok(scenarioContext.gitAccount && scenarioContext.gitAccount.length > 0, "failed to register git account")
 });
 
 Then('I register Azure account', async () => {
@@ -32,6 +50,10 @@ Then('I register Azure account', async () => {
 
 
 Then('I register Silo template', async () => {
+    const authAccounts = [scenarioContext.azureAccount]
+    if (scenarioContext.gitType === 'PRIVATE') {
+        authAccounts.push(scenarioContext.gitAccount)
+    }
     const gqlRes = await gqlClient
         .mutate({
             mutation: gql`
@@ -45,9 +67,9 @@ Then('I register Silo template', async () => {
                     "providers": ["AZURE"],
                     "repoPath": "terraform_templates/silos/azure_k3s_vnet_silo",
                     "repoPointer": "main",
-                    "repoUrl": "https://github.com/relizaio/reliza-ephemeral-framework.git",
+                    "repoUrl": scenarioContext.gitRepo,
                     "type": "SILO",
-                    "authAccounts": [scenarioContext.azureAccount]
+                    "authAccounts": authAccounts
                 }
             }
         })
@@ -56,6 +78,10 @@ Then('I register Silo template', async () => {
 });
 
 Then('I register Instance template', async () => {
+    const authAccounts = [scenarioContext.azureAccount]
+    if (scenarioContext.gitType === 'PRIVATE') {
+        authAccounts.push(scenarioContext.gitAccount)
+    }
     const gqlRes = await gqlClient
         .mutate({
             mutation: gql`
@@ -69,9 +95,9 @@ Then('I register Instance template', async () => {
                     "providers": ["AZURE"],
                     "repoPath": "terraform_templates/instances/azure_k3s_instance",
                     "repoPointer": "main",
-                    "repoUrl": "https://github.com/relizaio/reliza-ephemeral-framework.git",
+                    "repoUrl": scenarioContext.gitRepo,
                     "type": "INSTANCE",
-                    "authAccounts": [scenarioContext.azureAccount]
+                    "authAccounts": authAccounts
                 }
             }
         })

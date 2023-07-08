@@ -12,15 +12,27 @@ const testVars = {
         "resourceGroupName": process.env.REF_TEST_AZURE_RESOURCEGROUPNAME,
         "subscriptionId": process.env.REF_TEST_AZURE_SUBSCRIPTIONID,
         "tenantId": process.env.REF_TEST_AZURE_TENANTID
+    },
+    "gitAccount": {
+        "token": process.env.REF_TEST_GIT_TOKEN,
+        "username": process.env.REF_TEST_GIT_USERNAME,
+        "repositoryVendor": process.env.REF_TEST_GIT_VENDOR
     }
 }
 
-function initScenarioContext () {
-    return {
+function initScenarioContext (gitType) {
+    const scenarioContext = {
         azureAccountId: "",
         siloTemplate: "",
-        instanceTemplate: ""
+        instanceTemplate: "",
+        gitRepo: "https://github.com/relizaio/reliza-ephemeral-framework.git",
+        gitAccount: "",
+        gitType: gitType
     }
+    if (gitType === 'PRIVATE') {
+        scenarioContext.gitRepo = "https://github.com/taleodor/git-access-test.git"
+    }
+    return scenarioContext
 }
 
 function sleep (ms) {
