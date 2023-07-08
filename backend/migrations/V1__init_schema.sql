@@ -14,6 +14,7 @@ CREATE TABLE instances (
     last_updated_date timestamptz NOT NULL default now(),
     schema_version integer NOT NULL default 0,
     silo_id uuid NOT NULL,
+    template_id uuid NOT NULL,
     status text NOT NULL default 'ACTIVE',
     properties jsonb NULL
 );

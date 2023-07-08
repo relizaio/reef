@@ -12,8 +12,8 @@ import { AzureAccount } from '../model/Account'
 async function saveToDb (instance: Instance) {
     const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
     const siloUuidForDb = instance.silo_id.replace(constants.SILO_PREFIX, '')
-    const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, properties) values ($1, $2, $3, $4) RETURNING *`
-    const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, JSON.stringify(instance.properties)]
+    const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, template_id, properties) values ($1, $2, $3, $4, $5) RETURNING *`
+    const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, instance.template_id, JSON.stringify(instance.properties)]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
@@ -65,8 +65,8 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
         // locate azure account - TODO for now only single acct is supported
         const azureAct = await account.getAzureAccountFromSet(instanceTemplate.record_data.authAccounts)
         if (azureAct) {
-            respInstance = await createPendingInstanceInDb(instanceId, siloId)
-            createAzureInstanceTfRoutine(azureAct, instanceId, siloId)
+            respInstance = await createPendingInstanceInDb(instanceId, siloId, templateId)
+            createAzureInstanceTfRoutine(azureAct, instanceId, siloId, templateId)
         } else {
             console.error('missing Azure account for template = ' + templateId)
         }
@@ -74,18 +74,19 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
     return respInstance
 }
 
-async function createPendingInstanceInDb(instanceId: string, siloId: string) {
+async function createPendingInstanceInDb(instanceId: string, siloId: string, templateId: string) {
     const pendingInstance : Instance = {
         id: instanceId,
         status: constants.STATUS_PENDING,
         silo_id: siloId,
+        template_id: templateId,
         properties: []
     }
     await saveToDb(pendingInstance)
     return pendingInstance
 }
 
-async function createAzureInstanceTfRoutine (azureAct: AzureAccount, instanceId: string, siloId: string) {
+async function createAzureInstanceTfRoutine (azureAct: AzureAccount, instanceId: string, siloId: string, templateId: string) {
     const startTime = (new Date()).getTime()
     const initializeInstanceCmd =
         `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
@@ -107,6 +108,7 @@ async function createAzureInstanceTfRoutine (azureAct: AzureAccount, instanceId:
         id: instanceId,
         status: constants.STATUS_ACTIVE,
         silo_id: siloId,
+        template_id: templateId,
         properties: outInstanceProps
     }
     updateInstanceInDb(outInstance)

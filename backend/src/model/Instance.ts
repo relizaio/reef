@@ -5,6 +5,7 @@ class Instance {
     id : string = ''
     status: string = constants.STATUS_ACTIVE
     silo_id: string = ''
+    template_id: string = ''
     properties : Property[] = []
 }
 
