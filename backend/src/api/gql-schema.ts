@@ -14,6 +14,7 @@ const typeDefs = gql`
         createInstance(siloId: ID!, templateId: ID!): Instance,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
+        createAwsAccount(awsAccount: AwsAccountInput!): AccountId,
         createAzureAccount(azureAccount: AzureAccountInput!): AccountId,
         createGitAccount(gitAccount: GitAccountInput!): AccountId
     },
@@ -27,6 +28,11 @@ const typeDefs = gql`
     enum TemplateType {
         SILO
         INSTANCE
+    },
+    input AwsAccountInput {
+        region: String!
+        accessKey: String!
+        secretKey: String!
     },
     input AzureAccountInput {
         subscriptionId: String!

@@ -5,6 +5,22 @@ class AccountProvider {
     providerName: string = 'Undefined'
 }
 
+class AwsAccount extends AccountProvider {
+    providerName = constants.AWS_ACCOUNT_PROVIDER
+
+    region: string = ''
+    accessKey: string = ''
+    secretKey: string  = ''
+}
+
+class AwsAccountDao extends AccountProvider {
+    providerName = constants.AWS_ACCOUNT_PROVIDER
+
+    region: string = ''
+    accessKey: CipherDao = new CipherDao
+    secretKey: CipherDao = new CipherDao
+}
+
 class AzureAccount extends AccountProvider {
     providerName = constants.AZURE_ACCOUNT_PROVIDER
 
@@ -49,6 +65,8 @@ class AccountDao {
 
 export {
     AccountDao,
+    AwsAccount,
+    AwsAccountDao,
     AzureAccount,
     AzureAccountDao,
     GitAccount,

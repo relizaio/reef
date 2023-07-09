@@ -4,7 +4,7 @@ import template from '../services/template'
 import account from '../services/account'
 import { TemplateInput } from '../model/Template'
 import { Property } from '../model/Property'
-import { AzureAccount, GitAccount } from '../model/Account'
+import { AwsAccount, AzureAccount, GitAccount } from '../model/Account'
 
 const resolvers = {
     Query: {
@@ -50,6 +50,11 @@ const resolvers = {
             const templateInput : TemplateInput = params.templateInput
             const tmpl = await template.createTemplate(templateInput)
             return {id: tmpl.id}
+        },
+        createwsAccount: async (parent: any, params: any) => {
+            const awsAccountInput : AwsAccount = params.awsAccount
+            const awsAct = await account.createAwsAccount(awsAccountInput)
+            return {id: awsAct.id}
         },
         createAzureAccount: async (parent: any, params: any) => {
             const azureAccountInput : AzureAccount = params.azureAccount

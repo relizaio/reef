@@ -1,4 +1,4 @@
-import { AccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
+import { AccountDao, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
@@ -35,6 +35,16 @@ async function createGitAccount (ga: GitAccount) : Promise<AccountDao> {
     return adao
 }
 
+async function createAwsAccount (aa: AwsAccount) : Promise<AccountDao> {
+    const aaDao : AwsAccountDao = await awsAccountDaoFromAwsAccount(aa)
+    const adao : AccountDao = new AccountDao()
+    adao.id = utils.uuidv4()
+    adao.status = constants.STATUS_ACTIVE
+    adao.record_data = aaDao
+    await saveToDb(adao)
+    return adao
+}
+
 async function createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
     const aaDao : AzureAccountDao = await azureAccountDaoFromAzureAccount(aa)
     const adao : AccountDao = new AccountDao()
@@ -51,6 +61,14 @@ async function gitAccountDaoFromGitAccount (ga: GitAccount) : Promise<GitAccount
     gaDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
     gaDao.token = cipherDaoFromObject(await crypto.encrypt(ga.token))
     return gaDao
+}
+
+async function awsAccountDaoFromAwsAccount (aa: AwsAccount) : Promise<AwsAccountDao> {
+    const aaDao = new AwsAccountDao()
+    aaDao.region = aa.region
+    aaDao.accessKey = cipherDaoFromObject(await crypto.encrypt(aa.accessKey))
+    aaDao.secretKey = cipherDaoFromObject(await crypto.encrypt(aa.secretKey))
+    return aaDao
 }
 
 async function azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<AzureAccountDao> {
@@ -122,6 +140,7 @@ async function getGitAccountFromSet(accountSet: string[]) : Promise<GitAccount |
 }
 
 export default {
+    createAwsAccount,
     createAzureAccount,
     createGitAccount,
     getAccount,
