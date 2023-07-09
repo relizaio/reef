@@ -1,4 +1,4 @@
-const { ApolloClient, InMemoryCache, ApolloProvider, gql } = require('@apollo/client')
+const { ApolloClient, InMemoryCache, gql } = require('@apollo/client')
 
 const gqlClient = new ApolloClient({
     uri: 'http://localhost:4001/',
