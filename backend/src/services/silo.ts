@@ -107,7 +107,7 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
     })
     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-    console.log(`Creating Azure Silo ${siloId}...`)
+    console.log(`Creating Silo ${siloId}...`)
     const initializeSiloCmd = envVarCmd +
         `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)

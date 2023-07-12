@@ -24,3 +24,15 @@ Feature: Spin Azure Silo and Instance
         Then I create Instance
         Then I wait for Instance to become Active
         Then I delete Silo
+
+    @createSiloAws
+    Scenario: Spin AWS Silo and Instance off Pub Git Repo
+        Given I initialize "PUBLIC" scenario
+        Then I register AWS account
+        Then I register Silo template
+        # Then I register Instance template
+        Then I create Silo
+        Then I wait for Silo to become Active
+        # Then I create Instance
+        # Then I wait for Instance to become Active
+        Then I delete Silo

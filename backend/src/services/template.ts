@@ -47,7 +47,7 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     if (checkoutPaths.utilPath) await utils.deleteDir(checkoutPaths.utilPath)
     
     template.record_data.userVariables = tfVars
-    saveToDb(template)
+    await saveToDb(template)
     return template
 }
 

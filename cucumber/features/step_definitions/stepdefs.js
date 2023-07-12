@@ -48,11 +48,51 @@ Then('I register Azure account', async () => {
     assert.ok(scenarioContext.azureAccount && scenarioContext.azureAccount.length > 0, "failed to register azure account")
 });
 
+Then('I register AWS account', async () => {
+    const gqlRes = await gqlClient
+        .mutate({
+            mutation: gql`
+                mutation CreateAwsAccount($awsAccount: AwsAccountInput!) {
+                    createAwsAccount(awsAccount: $awsAccount) {
+                        id
+                    }
+                }`,
+            variables: {
+                "awsAccount": testVars.awsAccount
+            }
+
+        })
+    scenarioContext.awsAccount = gqlRes.data.createAwsAccount.id
+    assert.ok(scenarioContext.awsAccount && scenarioContext.awsAccount.length > 0, "failed to register AWS account")
+});
+
 
 Then('I register Silo template', async () => {
-    const authAccounts = [scenarioContext.azureAccount]
+    const authAccounts = []
     if (scenarioContext.gitType === 'PRIVATE') {
         authAccounts.push(scenarioContext.gitAccount)
+    }
+    let templateInput = {}
+    if (scenarioContext.azureAccount) {
+        authAccounts.push(scenarioContext.azureAccount)
+        templateInput = {
+            "providers": ["AZURE"],
+            "repoPath": "terraform_templates/silos/azure_k3s_vnet_silo",
+            "repoPointer": "main",
+            "repoUrl": scenarioContext.gitRepo,
+            "type": "SILO",
+            "authAccounts": authAccounts
+        }
+    } else if (scenarioContext.awsAccount) {
+        authAccounts.push(scenarioContext.awsAccount)
+        templateInput = {
+            "providers": ["AWS"],
+            "repoPath": "terraform_templates/silos/aws_k3s_vpc_silo",
+            "repoPointer": "main",
+            "repoUrl": scenarioContext.gitRepo,
+            "type": "SILO",
+            "authAccounts": authAccounts            
+        }
     }
     const gqlRes = await gqlClient
         .mutate({
@@ -63,14 +103,7 @@ Then('I register Silo template', async () => {
                     }
                 }`,
             variables: {
-                "templateInput": {
-                    "providers": ["AZURE"],
-                    "repoPath": "terraform_templates/silos/azure_k3s_vnet_silo",
-                    "repoPointer": "main",
-                    "repoUrl": scenarioContext.gitRepo,
-                    "type": "SILO",
-                    "authAccounts": authAccounts
-                }
+                "templateInput": templateInput
             }
         })
     scenarioContext.siloTemplate = gqlRes.data.createTemplate.id
@@ -78,7 +111,9 @@ Then('I register Silo template', async () => {
 });
 
 Then('I register Instance template', async () => {
-    const authAccounts = [scenarioContext.azureAccount]
+    const authAccounts = []
+    if (scenarioContext.azureAccount) authAccounts.push(scenarioContext.azureAccount)
+    if (scenarioContext.awsAccount) authAccounts.push(scenarioContext.awsAccount)
     if (scenarioContext.gitType === 'PRIVATE') {
         authAccounts.push(scenarioContext.gitAccount)
     }
@@ -107,6 +142,15 @@ Then('I register Instance template', async () => {
 
 
 Then('I create Silo', async () => {
+    let userVariables = []
+    if (scenarioContext.azureAccount) {
+        userVariables = [
+            {
+                "key": "resource_group_name",
+                "value": testVars.azureAccount.resourceGroupName
+            }
+        ]
+    }
     const gqlRes = await gqlClient
         .mutate({
             mutation: gql`
@@ -117,12 +161,7 @@ Then('I create Silo', async () => {
                 }`,
             variables: {
                 "templateId": scenarioContext.siloTemplate,
-                "userVariables": [
-                    {
-                        "key": "resource_group_name",
-                        "value": testVars.azureAccount.resourceGroupName
-                    }
-                ]
+                "userVariables": userVariables
             }
         })
     scenarioContext.siloId = gqlRes.data.createSilo.id

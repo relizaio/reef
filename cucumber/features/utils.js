@@ -6,6 +6,11 @@ const gqlClient = new ApolloClient({
 })
 
 const testVars = {
+    "awsAccount": {
+        "accessKey": process.env.REF_TEST_AWS_ACCESS_KEY,
+        "secretKey": process.env.REF_TEST_AWS_SECRET_KEY,
+        "region": process.env.REF_TEST_AWS_REGION
+    },
     "azureAccount": {
         "clientId": process.env.REF_TEST_AZURE_CLIENTID,
         "clientSecret": process.env.REF_TEST_AZURE_CLIENTSECRET,
@@ -22,6 +27,7 @@ const testVars = {
 
 function initScenarioContext (gitType) {
     const scenarioContext = {
+        awsAccountId: "",
         azureAccountId: "",
         siloTemplate: "",
         instanceTemplate: "",
