@@ -55,6 +55,7 @@ resource "aws_security_group" "ref_vpc_security_group" {
 # public subnet
 resource "aws_subnet" "ref_vpc_public" {
   vpc_id            = aws_vpc.ref_vpc.id
+  cidr_block        = aws_vpc.ref_vpc.cidr_block
   map_public_ip_on_launch = true
 }
 
