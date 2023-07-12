@@ -14,7 +14,7 @@ resource "aws_route" "ref_vpc_route_table" {
 }
 
 resource "aws_security_group" "ref_vpc_security_group" {
-  name        = "REF VPC Security Group - ${aws_vpc.ref_vpc.id}"
+  name        = "REF VPC Security Group - ${var.silo_identifier}"
   description = "Allow HTTP and HTTPS inbound traffic, all egress"
   vpc_id      = aws_vpc.ref_vpc.id
 
