@@ -1,6 +1,8 @@
 provider "aws" {}
 
-resource "aws_vpc" "ref_vpc" {}
+resource "aws_vpc" "ref_vpc" {
+  cidr_block = var.vpc_cidr
+}
 
 resource "aws_internet_gateway" "ref_vpc_internet_gateway" {
   vpc_id = aws_vpc.ref_vpc.id
