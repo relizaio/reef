@@ -99,12 +99,40 @@ async function getAzureAccount (accountId: string) : Promise<AzureAccount | null
     return aa
 }
 
+async function getAwsAccount (accountId: string) : Promise<AwsAccount | null> {
+    let aa : AwsAccount | null = null
+
+    const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1 and record_data->>'providerName' = $2`
+    const queryParams = [accountId, constants.AWS_ACCOUNT_PROVIDER]
+    const queryRes = await runQuery(queryText, queryParams)
+    if (queryRes.rows && queryRes.rows.length) {
+        const aaDao : AwsAccountDao = queryRes.rows[0].record_data
+        aa = new AwsAccount()
+        aa.region = aaDao.region
+        aa.accessKey = await crypto.decrypt(cipherObjectFromDao(aaDao.accessKey))
+        aa.secretKey = await crypto.decrypt(cipherObjectFromDao(aaDao.secretKey))
+    }
+    return aa
+}
+
 async function getAzureAccountFromSet(accountSet: string[]) : Promise<AzureAccount | null> {
     let aa : AzureAccount | null = null
     if (accountSet && accountSet.length) {
         let i = 0
         while (!aa && i < accountSet.length) {
             aa = await getAzureAccount(accountSet[i])
+            ++i
+        }
+    }
+    return aa
+}
+
+async function getAwsAccountFromSet(accountSet: string[]) : Promise<AwsAccount | null> {
+    let aa : AwsAccount | null = null
+    if (accountSet && accountSet.length) {
+        let i = 0
+        while (!aa && i < accountSet.length) {
+            aa = await getAwsAccount(accountSet[i])
             ++i
         }
     }
@@ -144,6 +172,7 @@ export default {
     createAzureAccount,
     createGitAccount,
     getAccount,
+    getAwsAccountFromSet,
     getAzureAccountFromSet,
     getGitAccountFromSet
 }

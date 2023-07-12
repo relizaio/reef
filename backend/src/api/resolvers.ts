@@ -51,7 +51,7 @@ const resolvers = {
             const tmpl = await template.createTemplate(templateInput)
             return {id: tmpl.id}
         },
-        createwsAccount: async (parent: any, params: any) => {
+        createAwsAccount: async (parent: any, params: any) => {
             const awsAccountInput : AwsAccount = params.awsAccount
             const awsAct = await account.createAwsAccount(awsAccountInput)
             return {id: awsAct.id}

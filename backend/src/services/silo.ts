@@ -6,7 +6,7 @@ import constants from '../utils/constants'
 import * as templateService from './template'
 import { ProviderType } from '../model/Template'
 import account from './account'
-import { AzureAccount } from '../model/Account'
+import { AwsAccount, AzureAccount } from '../model/Account'
 
 async function saveToDb (silo: Silo) {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -65,18 +65,24 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
     await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
+    let initSiloEnvVarCmd = ''
+    respSilo = await createPendingSiloInDb(siloId, templateId)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        // locate azure account if present
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
-            respSilo = await createPendingSiloInDb(siloId, templateId)
-            createAzureSiloTfRoutine(siloId, template.id, azureAct, userVariables)
+            initSiloEnvVarCmd += getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('missing azure account for template = ' + template.id)
         }
-    } else {
-        console.warn(`unsupported template providers = ${template.record_data.providers}`)
+    } else if (template.record_data.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
+        if (awsAct) {
+            initSiloEnvVarCmd += getAwsEnvTfPrefix(awsAct)
+        } else {
+            console.error('missing aws account for template = ' + template.id)
+        }
     }
+    createSiloTfRoutine(siloId, template.id, initSiloEnvVarCmd, userVariables)
     return respSilo
 }
 
@@ -91,7 +97,7 @@ async function createPendingSiloInDb(siloId: string, templateId: string) {
     return pendingSilo
 }
 
-async function createAzureSiloTfRoutine (siloId: string, templateId: string, azureAct : AzureAccount, userVariables: Property[]) {
+async function createSiloTfRoutine (siloId: string, templateId: string, envVarCmd: string, userVariables: Property[]) {
     const startTime = (new Date()).getTime()
     const siloTfVarsObj: any = {
         silo_identifier: siloId
@@ -102,9 +108,7 @@ async function createAzureSiloTfRoutine (siloId: string, templateId: string, azu
     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
     console.log(`Creating Azure Silo ${siloId}...`)
-    const initializeSiloCmd =
-        `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-        `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; ` +
+    const initializeSiloCmd = envVarCmd +
         `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
     const parsedSiloOut = utils.parseTfOutput(initSiloData)
@@ -132,24 +136,39 @@ async function destroySilo (siloId: string) {
     console.log(`Destroying TF Silo ${siloId}...`)
     const silo = await getSilo(siloId)
     const template = await templateService.default.getTemplate(silo.template_id)
+    let siloDestroyCmd = ''
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        // locate azure account if present
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
-            const siloDestroyCmd = `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-            `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId};` + 
-            `cd ${constants.TF_SPACE}/${siloId} && terraform destroy -auto-approve`
-            await utils.shellExec('sh', ['-c', siloDestroyCmd])
-            await utils.deleteDir(`${constants.TF_SPACE}/${siloId}`)
-            archiveSiloInDb(siloId)
+            siloDestroyCmd += getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('Could not locate azure account')
         }
-    } else {
-        console.error('Unsupported account encountered when destroying silo')
     }
+    if (template.record_data.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
+        if (awsAct) {
+            siloDestroyCmd += getAwsEnvTfPrefix(awsAct)
+        } else {
+            console.error('Could not locate aws account')
+        }
+    }
+    siloDestroyCmd += `cd ${constants.TF_SPACE}/${siloId} && terraform destroy -auto-approve`
+    await utils.shellExec('sh', ['-c', siloDestroyCmd])
+    await utils.deleteDir(`${constants.TF_SPACE}/${siloId}`)
+    archiveSiloInDb(siloId)
     const allDoneTime = (new Date()).getTime()
     console.log("After TF silo destroy time = " + (allDoneTime - startTime))
+}
+
+function getAzureEnvTfPrefix (azureAct: AzureAccount): string {
+    return `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+    `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; `
+}
+
+function getAwsEnvTfPrefix (awsAct: AwsAccount): string {
+    return `export AWS_REGION=${awsAct.region}; export AWS_ACCESS_KEY_ID=${awsAct.accessKey}; ` + 
+    `export AWS_SECRET_ACCESS_KEY=${awsAct.secretKey}; `
 }
 
 export default {
