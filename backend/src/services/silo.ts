@@ -6,7 +6,6 @@ import constants from '../utils/constants'
 import * as templateService from './template'
 import { ProviderType } from '../model/Template'
 import account from './account'
-import { AwsAccount, AzureAccount } from '../model/Account'
 
 async function saveToDb (silo: Silo) {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -70,14 +69,14 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
-            initSiloEnvVarCmd += getAzureEnvTfPrefix(azureAct)
+            initSiloEnvVarCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('missing azure account for template = ' + template.id)
         }
     } else if (template.record_data.providers.includes(ProviderType.AWS)) {
         const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
         if (awsAct) {
-            initSiloEnvVarCmd += getAwsEnvTfPrefix(awsAct)
+            initSiloEnvVarCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {
             console.error('missing aws account for template = ' + template.id)
         }
@@ -140,7 +139,7 @@ async function destroySilo (siloId: string) {
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
-            siloDestroyCmd += getAzureEnvTfPrefix(azureAct)
+            siloDestroyCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('Could not locate azure account')
         }
@@ -148,7 +147,7 @@ async function destroySilo (siloId: string) {
     if (template.record_data.providers.includes(ProviderType.AWS)) {
         const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
         if (awsAct) {
-            siloDestroyCmd += getAwsEnvTfPrefix(awsAct)
+            siloDestroyCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {
             console.error('Could not locate aws account')
         }
@@ -159,16 +158,6 @@ async function destroySilo (siloId: string) {
     archiveSiloInDb(siloId)
     const allDoneTime = (new Date()).getTime()
     console.log("After TF silo destroy time = " + (allDoneTime - startTime))
-}
-
-function getAzureEnvTfPrefix (azureAct: AzureAccount): string {
-    return `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
-    `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; `
-}
-
-function getAwsEnvTfPrefix (awsAct: AwsAccount): string {
-    return `export AWS_REGION=${awsAct.region}; export AWS_ACCESS_KEY_ID=${awsAct.accessKey}; ` + 
-    `export AWS_SECRET_ACCESS_KEY=${awsAct.secretKey}; `
 }
 
 export default {

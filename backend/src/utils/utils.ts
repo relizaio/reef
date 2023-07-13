@@ -5,6 +5,7 @@ import childProcess from 'child_process'
 import constants from './constants'
 import { TfVarDefinition } from '../model/Template'
 import { GitCheckoutObject } from '../model/GitCheckoutObject'
+import { AwsAccount, AzureAccount } from '../model/Account'
 
 async function sleepForTime(timeMs: number) {
     return new Promise((resolve, reject) => {
@@ -193,6 +194,16 @@ async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
     return checkoutPaths
 }
 
+function getAzureEnvTfPrefix (azureAct: AzureAccount): string {
+    return `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
+    `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; `
+}
+
+function getAwsEnvTfPrefix (awsAct: AwsAccount): string {
+    return `export AWS_REGION=${awsAct.region}; export AWS_ACCESS_KEY_ID=${awsAct.accessKey}; ` + 
+    `export AWS_SECRET_ACCESS_KEY=${awsAct.secretKey}; `
+}
+
 type GitCheckoutPaths = {
     checkoutPath: string,
     fullTemplatePath: string,
@@ -203,6 +214,8 @@ type GitCheckoutPaths = {
 export default {
     copyDir,
     deleteDir,
+    getAwsEnvTfPrefix,
+    getAzureEnvTfPrefix,
     gitCheckout,
     parseTfDirectoryForVariables,
     parseTfOutput,
