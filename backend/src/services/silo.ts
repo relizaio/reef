@@ -56,7 +56,6 @@ async function getAllActiveSilos () : Promise<Silo[]> {
 }
 
 async function createSilo (templateId: string, userVariables: Property[]) : Promise<Silo | null> {
-    let respSilo : Silo | null = null
     const siloId = constants.SILO_PREFIX + utils.uuidv4()
     const template = await templateService.default.getTemplate(templateId)
     const gco = await templateService.default.gitCheckoutObjectFromTemplate(template)
@@ -65,7 +64,7 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
     let initSiloEnvVarCmd = ''
-    respSilo = await createPendingSiloInDb(siloId, templateId)
+    const respSilo = await createPendingSiloInDb(siloId, templateId)
     if (template.record_data.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
         if (azureAct) {
@@ -73,7 +72,8 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
         } else {
             console.error('missing azure account for template = ' + template.id)
         }
-    } else if (template.record_data.providers.includes(ProviderType.AWS)) {
+    }
+    if (template.record_data.providers.includes(ProviderType.AWS)) {
         const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
         if (awsAct) {
             initSiloEnvVarCmd += utils.getAwsEnvTfPrefix(awsAct)
