@@ -112,10 +112,30 @@ Then('I register Silo template', async () => {
 
 Then('I register Instance template', async () => {
     const authAccounts = []
-    if (scenarioContext.azureAccount) authAccounts.push(scenarioContext.azureAccount)
-    if (scenarioContext.awsAccount) authAccounts.push(scenarioContext.awsAccount)
     if (scenarioContext.gitType === 'PRIVATE') {
         authAccounts.push(scenarioContext.gitAccount)
+    }
+    let templateInput = {}
+    if (scenarioContext.azureAccount) {
+        authAccounts.push(scenarioContext.azureAccount)
+        templateInput = {
+            "providers": ["AZURE"],
+            "repoPath": "terraform_templates/instances/azure_k3s_instance",
+            "repoPointer": "main",
+            "repoUrl": scenarioContext.gitRepo,
+            "type": "INSTANCE",
+            "authAccounts": authAccounts
+        }
+    } else if (scenarioContext.awsAccount) {
+        authAccounts.push(scenarioContext.awsAccount)
+        templateInput = {
+            "providers": ["AWS"],
+            "repoPath": "terraform_templates/instances/aws_k3s_vpc_instance",
+            "repoPointer": "main",
+            "repoUrl": scenarioContext.gitRepo,
+            "type": "INSTANCE",
+            "authAccounts": authAccounts
+        }
     }
     const gqlRes = await gqlClient
         .mutate({
@@ -126,14 +146,7 @@ Then('I register Instance template', async () => {
                     }
                 }`,
             variables: {
-                "templateInput": {
-                    "providers": ["AZURE"],
-                    "repoPath": "terraform_templates/instances/azure_k3s_instance",
-                    "repoPointer": "main",
-                    "repoUrl": scenarioContext.gitRepo,
-                    "type": "INSTANCE",
-                    "authAccounts": authAccounts
-                }
+                "templateInput": templateInput
             }
         })
     scenarioContext.instanceTemplate = gqlRes.data.createTemplate.id
@@ -148,6 +161,13 @@ Then('I create Silo', async () => {
             {
                 "key": "resource_group_name",
                 "value": testVars.azureAccount.resourceGroupName
+            }
+        ]
+    } else if (scenarioContext.awsAccount) {
+        userVariables = [
+            {
+                "key": "dns_zone_id",
+                "value": "testid"
             }
         ]
     }

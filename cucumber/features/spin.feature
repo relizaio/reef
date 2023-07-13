@@ -30,9 +30,9 @@ Feature: Spin Azure Silo and Instance
         Given I initialize "PUBLIC" scenario
         Then I register AWS account
         Then I register Silo template
-        # Then I register Instance template
+        Then I register Instance template
         Then I create Silo
         Then I wait for Silo to become Active
-        # Then I create Instance
-        # Then I wait for Instance to become Active
+        Then I create Instance
+        Then I wait for Instance to become Active
         Then I delete Silo
