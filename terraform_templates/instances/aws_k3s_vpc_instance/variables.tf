@@ -8,8 +8,8 @@ variable "instance_type" {
     default     = "t3a.small"
 }
 
-variable "dns_zone_name" {
-    description = "dns domain pre-configured for dns, i.e. test.com."
+variable "dns_zone_id" {
+    description = "route 53 zone id pre-configured for dns"
     default     = "unknown"
 }
 

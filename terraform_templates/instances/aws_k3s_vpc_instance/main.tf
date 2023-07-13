@@ -55,12 +55,8 @@ resource "aws_instance" "ref_node_1" {
   }
 }
 
-data "aws_route53_zone" "dns_zone" {
-  name         = var.dns_zone_name
-}
-
 resource "aws_route53_record" "www" {
-  zone_id = data.aws_route53_zone.dns_zone.id
+  zone_id = var.dns_zone_id
   name    = var.instance_id
   type    = "A"
   ttl     = "300"
