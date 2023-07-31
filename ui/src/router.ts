@@ -4,8 +4,13 @@ const routes : any[] = [
     {
         path: '/',
         name: 'home',
-        component: import('@/components/AppHome.vue')
-    }
+        component: () => import('@/components/AppHome.vue')
+    },
+    {
+        path: '/templates',
+        name: 'templates',
+        component: () => import('@/components/TemplatesList.vue')
+    },
 ]
 
 const Router : Router = createRouter({

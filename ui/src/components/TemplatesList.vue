@@ -14,6 +14,8 @@
 import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
 import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
+import gql from 'graphql-tag'
+import graphqlClient from '../utils/graphql'
 
 export default {
     name: 'TemplatesList',
@@ -29,15 +31,16 @@ export default {
         const templateFields: DataTableColumns<any> = [
             {
                 key: 'type',
-                title: 'TYPE'
+                title: 'TYPE',
+                render: (row: any) => {
+                    return row.recordData.type
+                }
             }
         ]
 
         const templatePagination = store.getters.templatePagination
 
-        const templates: ComputedRef<any> = computed((): any => {
-            return []
-        })
+        const templates: Ref<any[]> = ref([])
 
         const notify = async function (type: NotificationType, title: string, content: string) {
             notification[type]({
@@ -48,7 +51,36 @@ export default {
             })
         }
 
+        async function loadTemplates() {
+            const tmplResponse = await graphqlClient.query({
+                query: gql`
+                    query getAllTemplates {
+                        getAllTemplates {
+                            id
+                            status
+                            recordData {
+                                type
+                                repoUrl
+                                repoPath
+                                repoPointer
+                                providers
+                                authAccounts
+                                parentTemplates
+                                userVariables {
+                                    key
+                                    value
+                                }
+                            }
+                        }
+                    }
+                `,
+            })
+            templates.value = tmplResponse.data.getAllTemplates
+            console.log(templates.value)
+        }
+
         const onCreate = async function () {
+            loadTemplates()
         }
 
         await onCreate()
