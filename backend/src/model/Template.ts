@@ -39,7 +39,7 @@ enum TfVariableType {
 class Template {
     id : string = ''
     status: string = constants.STATUS_ACTIVE
-    record_data : TemplateData = new TemplateData()
+    recordData : TemplateData = new TemplateData()
 }
 
 class TemplateInput {

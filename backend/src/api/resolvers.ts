@@ -24,6 +24,9 @@ const resolvers = {
             const siloId : string = params.siloId
             return await instance.getInstancesOfSilo(siloId)
         },
+        getAllTemplates: async () => {
+            return await template.listTemplates()
+        }
     },
     Mutation: {
         createSilo: async (parent: any, params: any) => {

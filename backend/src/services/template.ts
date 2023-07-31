@@ -6,14 +6,28 @@ import { GitCheckoutObject } from '../model/GitCheckoutObject'
 import { GitAccount } from '../model/Account'
 import account from './account'
 
-const getTemplate = async (templateId: string) : Promise<Template> => {
+async function getTemplate (templateId: string) : Promise<Template> {
     const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
     const queryParams = [templateId]
     const queryRes = await runQuery(queryText, queryParams)
+    return dbRowToTemplate(queryRes.rows[0])
+}
+
+async function listTemplates () : Promise<Template[]> {
+    const queryText = `SELECT * FROM ${schema}.templates`
+    const queryRes = await runQuery(queryText, [])
+    let templates: Template[] = []
+    if (queryRes.rows && queryRes.rows.length) {
+        templates = queryRes.rows.map((row: any) => dbRowToTemplate(row)) 
+    }
+    return templates
+}
+
+function dbRowToTemplate (dbRow: any) : Template {
     const template : Template = {
-        id: queryRes.rows[0].uuid,
-        status: queryRes.rows[0].status,
-        record_data: queryRes.rows[0].record_data
+        id: dbRow.uuid,
+        status: dbRow.status,
+        recordData: dbRow.record_data
     }
     return template
 }
@@ -21,7 +35,7 @@ const getTemplate = async (templateId: string) : Promise<Template> => {
 async function saveToDb (template: Template) : Promise<Template> {
     const templateUuidForDb = template.id
     const queryText = `INSERT INTO ${schema}.templates (uuid, status, record_data) values ($1, $2, $3) RETURNING *`
-    const queryParams = [templateUuidForDb, template.status, JSON.stringify(template.record_data)]
+    const queryParams = [templateUuidForDb, template.status, JSON.stringify(template.recordData)]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
@@ -30,14 +44,14 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     const template: Template = new Template()
     template.id = utils.uuidv4()
     template.status = constants.STATUS_ACTIVE
-    template.record_data = new TemplateData()
-    template.record_data.repoPath = templateInput.repoPath
-    template.record_data.repoPointer = templateInput.repoPointer
-    template.record_data.repoUrl = templateInput.repoUrl
-    template.record_data.type = templateInput.type
-    template.record_data.providers = templateInput.providers
-    template.record_data.authAccounts = templateInput.authAccounts
-    template.record_data.parentTemplates = templateInput.parentTemplates
+    template.recordData = new TemplateData()
+    template.recordData.repoPath = templateInput.repoPath
+    template.recordData.repoPointer = templateInput.repoPointer
+    template.recordData.repoUrl = templateInput.repoUrl
+    template.recordData.type = templateInput.type
+    template.recordData.providers = templateInput.providers
+    template.recordData.authAccounts = templateInput.authAccounts
+    template.recordData.parentTemplates = templateInput.parentTemplates
 
     // parse supported user variables from actual template
     const gco = await gitCheckoutObjectFromTemplate(template)
@@ -46,7 +60,7 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     await utils.deleteDir(checkoutPaths.checkoutPath)
     if (checkoutPaths.utilPath) await utils.deleteDir(checkoutPaths.utilPath)
     
-    template.record_data.userVariables = tfVars
+    template.recordData.userVariables = tfVars
     await saveToDb(template)
     return template
 }
@@ -54,16 +68,16 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
 async function gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCheckoutObject> {
     const gco : GitCheckoutObject = new GitCheckoutObject()
 
-    const ga : GitAccount | null = await account.getGitAccountFromSet(template.record_data.authAccounts)
+    const ga : GitAccount | null = await account.getGitAccountFromSet(template.recordData.authAccounts)
     if (ga) {
         gco.isPrivate = true
         gco.token = ga.token
         gco.username = ga.username
     }
 
-    gco.gitUri = template.record_data.repoUrl
-    gco.gitPath = template.record_data.repoPath
-    gco.gitPointer = template.record_data.repoPointer
+    gco.gitUri = template.recordData.repoUrl
+    gco.gitPath = template.recordData.repoPath
+    gco.gitPointer = template.recordData.repoPointer
 
 
     return gco
@@ -72,5 +86,6 @@ async function gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCh
 export default {
     createTemplate,
     getTemplate,
-    gitCheckoutObjectFromTemplate
+    gitCheckoutObjectFromTemplate,
+    listTemplates
 }

@@ -65,16 +65,16 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
     if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
     let initSiloEnvVarCmd = ''
     const respSilo = await createPendingSiloInDb(siloId, templateId)
-    if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AZURE)) {
+        const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)
         if (azureAct) {
             initSiloEnvVarCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('missing azure account for template = ' + template.id)
         }
     }
-    if (template.record_data.providers.includes(ProviderType.AWS)) {
-        const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(template.recordData.authAccounts)
         if (awsAct) {
             initSiloEnvVarCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {
@@ -136,16 +136,16 @@ async function destroySilo (siloId: string) {
     const silo = await getSilo(siloId)
     const template = await templateService.default.getTemplate(silo.template_id)
     let siloDestroyCmd = ''
-    if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AZURE)) {
+        const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)
         if (azureAct) {
             siloDestroyCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('Could not locate azure account')
         }
     }
-    if (template.record_data.providers.includes(ProviderType.AWS)) {
-        const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(template.recordData.authAccounts)
         if (awsAct) {
             siloDestroyCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {

@@ -90,16 +90,16 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
     let initInstEnvVarCmd = ''
     const respInstance = await createPendingInstanceInDb(instanceId, siloId, templateId)
-    if (instanceTemplate.record_data.providers.includes(ProviderType.AZURE)) {
-        const azureAct = await account.getAzureAccountFromSet(instanceTemplate.record_data.authAccounts)
+    if (instanceTemplate.recordData.providers.includes(ProviderType.AZURE)) {
+        const azureAct = await account.getAzureAccountFromSet(instanceTemplate.recordData.authAccounts)
         if (azureAct) {
             initInstEnvVarCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error('missing Azure account for template = ' + templateId)
         }
     }
-    if (instanceTemplate.record_data.providers.includes(ProviderType.AWS)) {
-        const awsAct = await account.getAwsAccountFromSet(instanceTemplate.record_data.authAccounts)
+    if (instanceTemplate.recordData.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(instanceTemplate.recordData.authAccounts)
         if (awsAct) {
             initInstEnvVarCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {
@@ -156,16 +156,16 @@ const destroyInstance = async (instanceId: string) => {
     const instance = await getInstance(instanceId)
     const template = await templateService.default.getTemplate(instance.template_id)
     let instanceDestroyCmd = ''
-    if (template.record_data.providers.includes(ProviderType.AZURE)) {
-        const azureAct = await account.getAzureAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AZURE)) {
+        const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)
         if (azureAct) {
             instanceDestroyCmd += utils.getAzureEnvTfPrefix(azureAct)
         } else {
             console.error(`Could not locate azure account on destroying instance ${instanceId}`)
         }
     }
-    if (template.record_data.providers.includes(ProviderType.AWS)) {
-        const awsAct = await account.getAwsAccountFromSet(template.record_data.authAccounts)
+    if (template.recordData.providers.includes(ProviderType.AWS)) {
+        const awsAct = await account.getAwsAccountFromSet(template.recordData.authAccounts)
         if (awsAct) {
             instanceDestroyCmd += utils.getAwsEnvTfPrefix(awsAct)
         } else {

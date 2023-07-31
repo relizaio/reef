@@ -6,7 +6,8 @@ const typeDefs = gql`
         getSilo(siloId: ID!): Silo,
         getInstance(instanceId: ID!): Instance,
         getAllActiveSilos: [Silo],
-        getInstancesOfSilo(siloId: ID!): [Instance]
+        getInstancesOfSilo(siloId: ID!): [Instance],
+        getAllTemplates: [Template]
     },
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
@@ -79,6 +80,18 @@ const typeDefs = gql`
     type Template {
         id: ID!
         status: String
+        recordData: TemplateData
+    }
+
+    type TemplateData {
+        type: TemplateType
+        repoUrl: String
+        repoPath: String
+        repoPointer: String
+        providers: [ProviderType]
+        authAccounts: [ID]
+        parentTemplates: [ID]
+        userVariables: [KeyValue]
     }
 `
 
