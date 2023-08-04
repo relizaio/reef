@@ -35,6 +35,13 @@ export default {
                 render: (row: any) => {
                     return row.recordData.type
                 }
+            },
+            {
+                key: 'providers',
+                title: 'PROVIDERS',
+                render: (row: any) => {
+                    return row.recordData.providers
+                }
             }
         ]
 
