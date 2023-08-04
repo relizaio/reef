@@ -11,6 +11,11 @@ const routes : any[] = [
         name: 'templates',
         component: () => import('@/components/TemplatesList.vue')
     },
+    {
+        path: '/silos',
+        name: 'silos',
+        component: () => import('@/components/SilosList.vue')
+    },
 ]
 
 const Router : Router = createRouter({

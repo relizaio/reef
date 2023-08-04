@@ -19,13 +19,27 @@ const storeObject : any = {
                     }
                 })
                 return templatePagination
-            }
+            },
+            siloPagination: () => {
+                const siloPagination = reactive({
+                    page: 1,
+                    pageSize: 10,
+                    onChange: (page: number) => {
+                        siloPagination.page = page
+                    }
+                })
+                return siloPagination
+            },
         }
     },
     getters: {
         templatePagination (state: any) {
             return state.templatePagination()
-        }
+        },
+        siloPagination (state: any) {
+            return state.siloPagination()
+        },
+
     },
     mutations: {
     },
