@@ -6,6 +6,7 @@ const typeDefs = gql`
         getSilo(siloId: ID!): Silo,
         getInstance(instanceId: ID!): Instance,
         getAllActiveSilos: [Silo],
+        getAllActiveInstances: [Instance],
         getInstancesOfSilo(siloId: ID!): [Instance],
         getAllTemplates: [Template]
     },

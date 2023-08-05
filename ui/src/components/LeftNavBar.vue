@@ -99,7 +99,7 @@ function menuOptions () : MenuOption[] {
                     RouterLink,
                     {
                         to: {
-                            name: 'home',
+                            name: 'instances',
                             params: {}
                         }
                     },

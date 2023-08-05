@@ -26,6 +26,12 @@ async function getInstancesOfSilo (siloId: string) : Promise<Instance[]> {
     return queryRes.rows.map((r: any) => transformDbRowToInstance(r))
 }
 
+async function getAllActiveInstances () : Promise<Instance[]> {
+    const queryText = `SELECT * FROM ${schema}.instances where status = 'ACTIVE'`
+    const queryRes = await runQuery(queryText, [])
+    return queryRes.rows.map((r: any) => transformDbRowToInstance(r))
+}
+
 function transformDbRowToInstance(dbRow: any): Instance {
     const instance : Instance = {
         id: constants.INSTANCE_PREFIX + dbRow.uuid,
@@ -184,5 +190,6 @@ export default {
     getInstance,
     createInstance,
     destroyInstance,
+    getAllActiveInstances,
     getInstancesOfSilo
 }

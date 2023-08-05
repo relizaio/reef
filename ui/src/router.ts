@@ -16,6 +16,11 @@ const routes : any[] = [
         name: 'silos',
         component: () => import('@/components/SilosList.vue')
     },
+    {
+        path: '/instances',
+        name: 'instances',
+        component: () => import('@/components/InstancesList.vue')
+    },
 ]
 
 const Router : Router = createRouter({

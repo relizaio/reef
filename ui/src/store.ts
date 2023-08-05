@@ -10,6 +10,16 @@ const storeObject : any = {
     state () {
         return {
             templates: [],
+            instancePagination: () => {
+                const instancePagination = reactive({
+                    page: 1,
+                    pageSize: 10,
+                    onChange: (page: number) => {
+                        instancePagination.page = page
+                    }
+                })
+                return instancePagination
+            },
             templatePagination: () => {
                 const templatePagination = reactive({
                     page: 1,
@@ -33,6 +43,9 @@ const storeObject : any = {
         }
     },
     getters: {
+        instancePagination (state: any) {
+            return state.instancePagination()
+        },
         templatePagination (state: any) {
             return state.templatePagination()
         },

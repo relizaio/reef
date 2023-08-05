@@ -17,6 +17,9 @@ const resolvers = {
             const instanceId : string = params.instanceId
             return await instance.getInstance(instanceId)
         },
+        getAllActiveInstances: async () => {
+            return await instance.getAllActiveInstances()
+        },
         getAllActiveSilos: async () => {
             return await silo.getAllActiveSilos()
         },
