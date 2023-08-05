@@ -1,12 +1,22 @@
 <template>
     <div>
         <h4>Silos</h4>
-        <vue-feather class="icons clickable" type="plus-circle" title="Add Silo" />
+        <vue-feather 
+            class="icons clickable"
+            type="plus-circle"
+            @click="showCreateSiloModal = true"
+            title="Add Silo" />
         <n-data-table
             :columns="siloFields"
             :data="silos"
             :pagination="siloPagination"
             size="small" />
+        <n-modal
+            v-model:show="showCreateSiloModal"
+            preset="dialog"
+            :show-icon="false">
+            <create-silo />
+        </n-modal>
     </div>
 </template>
 
@@ -16,10 +26,12 @@ import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import CreateSilo from './CreateSilo.vue'
 
 export default {
     name: 'SilosList',
     components: {
+        CreateSilo,
         NButton, NDataTable, NModal, NPopover, NSelect
     },
     props: {
@@ -38,6 +50,8 @@ export default {
         const siloPagination = store.getters.siloPagination
 
         const silos: Ref<any[]> = ref([])
+
+        const showCreateSiloModal = ref(false)
 
         const notify = async function (type: NotificationType, title: string, content: string) {
             notification[type]({
@@ -69,6 +83,7 @@ export default {
         await onCreate()
 
         return {
+            showCreateSiloModal,
             siloFields,
             siloPagination,
             silos
