@@ -6,6 +6,7 @@ class Silo {
     status: string = constants.STATUS_ACTIVE
     template_id: string = ''
     properties : Property[] = []
+    instance_templates : string[] = []
 }
 
 

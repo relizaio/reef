@@ -12,6 +12,7 @@ const typeDefs = gql`
     },
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
+        updateSilo(siloId: ID!, templateIds: [ID]): Silo,
         destroySilo(siloId: ID!): Boolean,
         createInstance(siloId: ID!, templateId: ID!): Instance,
         destroyInstance(instanceId: ID!): Boolean,

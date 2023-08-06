@@ -37,6 +37,11 @@ const resolvers = {
             const userVariables : Property[] = params.userVariables
             return await silo.createSilo(templateId, userVariables)
         },
+        updateSilo: async (parent: any, params: any) => {
+            const siloId : string = params.siloId
+            const templateIds: string[] = params.templateIds
+            return await silo.setInstanceTemplatesOnSilo(siloId, templateIds)
+        },
         destroySilo: (parent: any, params: any) => {
             const siloId : string = params.siloId
             silo.destroySilo(siloId)

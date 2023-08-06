@@ -5,7 +5,8 @@ CREATE TABLE silos (
     schema_version integer NOT NULL default 0,
     status text NOT NULL default 'ACTIVE',
     template_id uuid,
-    properties jsonb NULL
+    properties jsonb NULL,
+    instance_templates jsonb NULL
 );
 
 CREATE TABLE instances (

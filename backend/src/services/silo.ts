@@ -15,7 +15,7 @@ async function saveToDb (silo: Silo) {
     return queryRes.rows[0]
 }
 
-async function updateSiloDbRecord (silo: Silo) {
+async function updateSiloDbRecord (silo: Silo): Promise<Silo> {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
     const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, properties = $3 where uuid = $4 RETURNING *`
     const queryParams = [silo.status, silo.template_id, JSON.stringify(silo.properties), siloUuidForDb]
@@ -28,7 +28,7 @@ async function archiveSiloInDb (siloId: string) {
     const queryText = `UPDATE ${schema}.silos SET status = $1, last_updated_date = now() where uuid = $2`
     const queryParams = [constants.STATUS_ARCHIVED, siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
-    return queryRes.rows[0]
+    return transformDbRowToSilo(queryRes.rows[0])
 }
 
 function transformDbRowToSilo(dbRow: any): Silo {
@@ -36,7 +36,8 @@ function transformDbRowToSilo(dbRow: any): Silo {
         id: constants.SILO_PREFIX + dbRow.uuid,
         status: dbRow.status,
         template_id: dbRow.template_id,
-        properties: dbRow.properties
+        properties: dbRow.properties,
+        instance_templates: dbRow.instance_templates
     }
     return silo
 }
@@ -90,10 +91,17 @@ async function createPendingSiloInDb(siloId: string, templateId: string) {
         id: siloId,
         status: constants.STATUS_PENDING,
         template_id: templateId,
-        properties: []
+        properties: [],
+        instance_templates: []
     }
     await saveToDb(pendingSilo)
     return pendingSilo
+}
+
+async function setInstanceTemplatesOnSilo(siloId: string, templateIds: string[]) {
+    const silo = await getSilo(siloId)
+    silo.instance_templates = templateIds
+    await updateSiloDbRecord(silo)
 }
 
 async function createSiloTfRoutine (siloId: string, templateId: string, envVarCmd: string, userVariables: Property[]) {
@@ -123,9 +131,10 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
         id: siloId,
         status: constants.STATUS_ACTIVE,
         template_id: templateId,
-        properties: outSiloProps
+        properties: outSiloProps,
+        instance_templates: []
     }
-    updateSiloDbRecord(outSilo)
+    await updateSiloDbRecord(outSilo)
     const allDoneTime = (new Date()).getTime()
     console.log("After TF silo create time = " + (allDoneTime - startTime))
 }
@@ -164,5 +173,6 @@ export default {
     createSilo,
     destroySilo,
     getAllActiveSilos,
-    getSilo
+    getSilo,
+    setInstanceTemplatesOnSilo
 }
