@@ -63,8 +63,14 @@ class AccountDao {
     record_data : AccountProvider = new AccountProvider()
 }
 
+class AccountDto {
+    id : string = ''
+    providerName: string = ''
+}
+
 export {
     AccountDao,
+    AccountDto,
     AwsAccount,
     AwsAccountDao,
     AzureAccount,

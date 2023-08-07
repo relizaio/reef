@@ -114,7 +114,7 @@ function menuOptions () : MenuOption[] {
                     RouterLink,
                     {
                         to: {
-                            name: 'home',
+                            name: 'accounts',
                             params: {}
                         }
                     },

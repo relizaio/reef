@@ -23,6 +23,9 @@ const resolvers = {
         getAllActiveSilos: async () => {
             return await silo.getAllActiveSilos()
         },
+        getAllActiveAccounts: async () => {
+            return await account.getAllActiveAccounts()
+        },
         getInstancesOfSilo: async (parent: any, params: any) => {
             const siloId : string = params.siloId
             return await instance.getInstancesOfSilo(siloId)

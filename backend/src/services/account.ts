@@ -1,4 +1,4 @@
-import { AccountDao, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
+import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
@@ -15,6 +15,20 @@ async function getAccount (accountId: string) : Promise<AccountDao> {
         record_data: queryRes.rows[0].record_data
     }
     return acDao
+}
+
+async function getAllActiveAccounts () : Promise<AccountDto[]> {
+    const queryText = `SELECT * FROM ${schema}.accounts where status = 'ACTIVE'`
+    const queryRes = await runQuery(queryText, [])
+    return queryRes.rows.map((r: any) => transformDbRowToAccountDto(r))
+}
+
+function transformDbRowToAccountDto(dbRow: any): AccountDto {
+    const account : AccountDto = {
+        id: dbRow.uuid,
+        providerName: dbRow.record_data.providerName
+    }
+    return account
 }
 
 async function saveToDb (account: AccountDao) {
@@ -172,6 +186,7 @@ export default {
     createAzureAccount,
     createGitAccount,
     getAccount,
+    getAllActiveAccounts,
     getAwsAccountFromSet,
     getAzureAccountFromSet,
     getGitAccountFromSet

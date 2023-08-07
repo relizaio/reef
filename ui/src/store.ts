@@ -10,6 +10,16 @@ const storeObject : any = {
     state () {
         return {
             templates: [],
+            accountPagination: () => {
+                const accountPagination = reactive({
+                    page: 1,
+                    pageSize: 10,
+                    onChange: (page: number) => {
+                        accountPagination.page = page
+                    }
+                })
+                return accountPagination
+            },
             instancePagination: () => {
                 const instancePagination = reactive({
                     page: 1,

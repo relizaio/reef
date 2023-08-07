@@ -7,6 +7,7 @@ const typeDefs = gql`
         getInstance(instanceId: ID!): Instance,
         getAllActiveSilos: [Silo],
         getAllActiveInstances: [Instance],
+        getAllActiveAccounts: [Account],
         getInstancesOfSilo(siloId: ID!): [Instance],
         getAllTemplates: [Template]
     },
@@ -17,9 +18,9 @@ const typeDefs = gql`
         createInstance(siloId: ID!, templateId: ID!): Instance,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
-        createAwsAccount(awsAccount: AwsAccountInput!): AccountId,
-        createAzureAccount(azureAccount: AzureAccountInput!): AccountId,
-        createGitAccount(gitAccount: GitAccountInput!): AccountId
+        createAwsAccount(awsAccount: AwsAccountInput!): Account,
+        createAzureAccount(azureAccount: AzureAccountInput!): Account,
+        createGitAccount(gitAccount: GitAccountInput!): Account
     },
     enum ProviderType {
         AZURE
@@ -62,8 +63,9 @@ const typeDefs = gql`
         key: String
         value: String
     },
-    type AccountId {
-        id: String
+    type Account {
+        id: ID
+        providerName: String
     },
     type Silo {
         id: ID!

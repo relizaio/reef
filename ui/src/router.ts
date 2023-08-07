@@ -21,6 +21,11 @@ const routes : any[] = [
         name: 'instances',
         component: () => import('@/components/InstancesList.vue')
     },
+    {
+        path: '/accounts',
+        name: 'accounts',
+        component: () => import('@/components/AccountsList.vue')
+    },
 ]
 
 const Router : Router = createRouter({
