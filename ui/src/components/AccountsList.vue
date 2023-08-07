@@ -15,7 +15,7 @@
             v-model:show="showCreateAccountModal"
             preset="dialog"
             :show-icon="false">
-            <!-- create-silo / -->
+            <create-account />
         </n-modal>
     </div>
 </template>
@@ -26,10 +26,12 @@ import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import CreateAccount from './CreateAccount.vue'
 
 export default {
     name: 'AccountsList',
     components: {
+        CreateAccount,
         NButton, NDataTable, NModal, NPopover, NSelect
     },
     props: {
