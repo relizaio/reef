@@ -7,6 +7,7 @@
                     label="Type">
                 <n-select
                     v-model:value="template.type"
+                    v-on:update:value="handleTemplateTypeSwitch"
                     required
                     :options="types" />
             </n-form-item>
@@ -47,6 +48,15 @@
                         multiple
                         :options="accounts" />
             </n-form-item>
+            <n-form-item
+                    v-if="template.type === 'INSTANCE'"
+                    path="parentTemplates"
+                    label="Parent Templates (Silo Templates This Can Be Used With)">
+                    <n-select
+                        v-model:value="template.parentTemplates"
+                        multiple
+                        :options="parentTemplates" />
+            </n-form-item>
             <n-button @click="createTemplate" type="success">Create</n-button>
         </n-form>
     </div>
@@ -70,6 +80,7 @@ export default {
     async setup(/*props : any, { emit } : any*/) {
 
         const accounts: Ref<any[]> = ref([])
+        const parentTemplates: Ref<any[]> = ref([])
 
         const template = ref({
             type: '',
@@ -118,6 +129,38 @@ export default {
             console.log(gqlRes)
         }
 
+        async function handleTemplateTypeSwitch() {
+            if (template.value.type === 'INSTANCE') await loadParentTemplates()
+        }
+
+        async function loadParentTemplates() {
+            const tmplResponse = await graphqlClient.query({
+                query: gql`
+                    query getAllTemplates {
+                        getAllTemplates {
+                            id
+                            status
+                            recordData {
+                                type
+                                repoUrl
+                                repoPath
+                                repoPointer
+                                providers
+                            }
+                        }
+                    }
+                `,
+            })
+            parentTemplates.value = tmplResponse.data.getAllTemplates
+                .filter((t: any) => t.status === 'ACTIVE' && t.recordData.type === 'SILO')
+                .map((t: any) => {
+                    return {
+                        label: t.id + ' ' + t.recordData.providers + ' ' + t.recordData.type,
+                        value: t.id
+                    }
+                })
+        }
+
         async function loadAccounts() {
             const acctResponse = await graphqlClient.query({
                 query: gql`
@@ -142,6 +185,8 @@ export default {
         return {
             accounts,
             createTemplate,
+            handleTemplateTypeSwitch,
+            parentTemplates,
             providers,
             template,
             types
