@@ -1,12 +1,22 @@
 <template>
     <div>
         <h4>Templates</h4>
-        <vue-feather class="icons clickable" type="plus-circle" title="Add Template" />
+        <vue-feather
+            @click="showCreateTemplateModal = true"
+            class="icons clickable"
+            type="plus-circle"
+            title="Add Template" />
         <n-data-table
             :columns="templateFields"
             :data="templates"
             :pagination="templatePagination"
             size="small" />
+        <n-modal
+            v-model:show="showCreateTemplateModal"
+            preset="dialog"
+            :show-icon="false">
+            <create-template />
+        </n-modal>
     </div>
 </template>
 
@@ -16,10 +26,12 @@ import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import CreateTemplate from './CreateTemplate.vue'
 
 export default {
     name: 'TemplatesList',
     components: {
+        CreateTemplate,
         NButton, NDataTable, NModal, NPopover, NSelect
     },
     props: {
@@ -27,6 +39,8 @@ export default {
     async setup(/*props : any, { emit } : any*/) {
         const store = useStore()
         const notification = useNotification()
+
+        const showCreateTemplateModal = ref(false)
 
         const templateFields: DataTableColumns<any> = [
             {
@@ -93,6 +107,7 @@ export default {
         await onCreate()
 
         return {
+            showCreateTemplateModal,
             templateFields,
             templatePagination,
             templates
