@@ -15,7 +15,7 @@
             v-model:show="showCreateInstanceModal"
             preset="dialog"
             :show-icon="false">
-            <!-- create-silo / -->
+            <create-instance />
         </n-modal>
     </div>
 </template>
@@ -26,11 +26,12 @@ import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import CreateInstance from './CreateInstance.vue'
 
 export default {
     name: 'InstancesList',
     components: {
-        // CreateInstance,
+        CreateInstance,
         NButton, NDataTable, NModal, NPopover, NSelect
     },
     props: {
