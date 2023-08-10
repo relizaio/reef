@@ -80,6 +80,12 @@ const resolvers = {
             const gitAct = await account.createGitAccount(gitAccountInput)
             return {id: gitAct.id}
         },
+    },
+    Silo: {
+        template: async (parent: any, params: any) => {
+            const templateId = parent.template_id
+            return await template.getTemplate(templateId)
+        }
     }
 }
 

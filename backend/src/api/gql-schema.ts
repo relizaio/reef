@@ -70,6 +70,7 @@ const typeDefs = gql`
     type Silo {
         id: ID!
         status: String
+        template: Template
         properties: [KeyValue]
     },
     type Instance {
