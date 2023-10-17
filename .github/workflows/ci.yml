@@ -1,0 +1,37 @@
+on: [push]
+
+name: Build Docker Images And Submit Metadata To Reliza Hub
+
+jobs:
+  build-backend:
+    name: Build And Push Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: RelizaHub Build And Submit Release metadata action
+        uses: relizaio/reliza-docker-action@1.8
+        with:
+          registry_username: ${{ secrets.DOCKER_LOGIN }}
+          registry_password: ${{ secrets.DOCKER_TOKEN }}
+          registry_host: registry.relizahub.com
+          image_namespace: registry.relizahub.com/library
+          image_name: ref-backend
+          reliza_api_id: ${{ secrets.RELIZA_API_ID }}
+          reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
+          path: backend
+          reliza_project_id: 1ceec603-5e23-45cb-b2d7-5f2adc3494d8
+  build-frontend:
+    name: Build And Push Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: RelizaHub Build And Submit Release metadata action
+        uses: relizaio/reliza-docker-action@1.8
+        with:
+          registry_username: ${{ secrets.DOCKER_LOGIN }}
+          registry_password: ${{ secrets.DOCKER_TOKEN }}
+          registry_host: registry.relizahub.com
+          image_namespace: registry.relizahub.com/library
+          image_name: ref-ui
+          reliza_api_id: ${{ secrets.RELIZA_API_ID }}
+          reliza_api_key: ${{ secrets.RELIZA_API_KEY }}
+          path: ui
+          reliza_project_id: 82feb7ba-9928-4716-9ba3-316abc145bdd
