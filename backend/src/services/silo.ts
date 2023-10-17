@@ -27,8 +27,7 @@ async function archiveSiloInDb (siloId: string) {
     const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     const queryText = `UPDATE ${schema}.silos SET status = $1, last_updated_date = now() where uuid = $2`
     const queryParams = [constants.STATUS_ARCHIVED, siloUuidForDb]
-    const queryRes = await runQuery(queryText, queryParams)
-    return transformDbRowToSilo(queryRes.rows[0])
+    await runQuery(queryText, queryParams)
 }
 
 function transformDbRowToSilo(dbRow: any): Silo {
