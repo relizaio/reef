@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+services:
+  ref-backend:
+    image: registry.relizahub.com/library/ref-backend
+    environment:
+     - POSTGRES_HOST=ref-postgresql
+     - POSTGRES_PORT=5432
+    depends_on:
+     - ref-postgresql
+    ports:
+     - "4002:4001"
+    volumes:
+      - "tfspace-data-registry:/app/tf_space"
+  ref-ui:
+    image: registry.relizahub.com/library/ref-ui
+    ports:
+     - "8112:80"
+    environment:
+     - BACKEND_HOST=ref-backend
+     - BACKEND_PORT=4001
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
+      update_config:
+        parallelism: 1
+        delay: 10s
+    depends_on:
+     - rebom-backend
+  ref-postgres-init:
+    image: 'flyway/flyway:9-alpine'
+    restart: on-failure
+    depends_on:
+      - ref-postgresql
+    command:
+      [
+        '-url=jdbc:postgresql://ref-postgresql:5432/postgres',
+        '-user=postgres',
+        '-password=password',
+        '-defaultSchema=ref',
+        '-schemas=ref',
+        'migrate'
+      ]
+    volumes:
+      - ../../backend/migrations:/flyway/sql
+  ref-postgresql:
+    image: postgres:16
+    environment:
+     - POSTGRES_PASSWORD=password
+    volumes:
+      - "pg-data-registry:/var/lib/postgresql/data"
+volumes:
+  pg-data-registry:
+    driver: local
+  tfspace-data-registry:
+    driver: local
