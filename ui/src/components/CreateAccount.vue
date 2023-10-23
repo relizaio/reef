@@ -36,7 +36,7 @@
             :model="azureAccount">
             <n-form-item
                     path="clientId"
-                    label="Clicent ID">
+                    label="Client ID">
                 <n-input
                     placeholder="Enter Client ID"
                     v-model:value="azureAccount.clientId" />
