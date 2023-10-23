@@ -149,7 +149,7 @@ async function parseFileIntoTfVars (path: string) : Promise<TfVarDefinition[]> {
  * @param gitPointer - this can be a branch, a tag or a specific commit hash to pull 
  */
 async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
-    let gitPath = gco.gitPath
+    const gitPath = gco.gitPath
     const gitCheckoutId = constants.GIT_PREFIX + uuidv4()
     const checkoutPath = `./${constants.TF_SPACE}/${gitCheckoutId}`
     let retPath = checkoutPath
