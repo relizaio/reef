@@ -11,6 +11,22 @@ services:
      - "4002:4001"
     volumes:
       - "tfspace-data:/app/tf_space"
+  ref-ui:
+    build: ../../ui
+    ports:
+     - "8112:80"
+    environment:
+     - BACKEND_HOST=ref-backend
+     - BACKEND_PORT=4001
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
+      update_config:
+        parallelism: 1
+        delay: 10s
+    depends_on:
+     - rebom-backend
   ref-postgres-init:
     image: 'flyway/flyway:9-alpine'
     restart: on-failure
