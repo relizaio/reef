@@ -23,7 +23,8 @@
 <script lang="ts">
 import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
 import { useStore } from 'vuex'
-import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
+import { NButton, NDataTable, NIcon, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
+import { Trash } from '@vicons/tabler'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
 import CreateSilo from './CreateSilo.vue'
@@ -48,6 +49,20 @@ export default {
             {
                 key: 'status',
                 title: 'Status'
+            },
+            {
+                key: 'controls',
+                title: 'Controls',
+                render: (row: any) => {
+                    return h(NIcon, {
+                            size: 22,
+                            class: 'icons clickable',
+                            title: 'Destroy Instance',
+                            onClick: () => destroySilo(row.id)
+                        }, {
+                            default: () => h(Trash)
+                        })
+                }
             }
         ]
 
@@ -79,6 +94,19 @@ export default {
             })
             silos.value = silosResponse.data.getAllActiveSilos
             console.log(silos.value)
+        }
+
+        async function destroySilo (siloId: string) {
+            await graphqlClient
+                .mutate({
+                    mutation: gql`
+                        mutation destroySilo($siloId: ID!) {
+                            destroySilo(siloId: $siloId)
+                        }`,
+                    variables: {
+                        siloId
+                    }
+                })
         }
 
         const onCreate = async function () {
