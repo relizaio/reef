@@ -43,7 +43,11 @@ export default {
         const instanceFields: DataTableColumns<any> = [
             {
                 key: 'id',
-                title: 'id'
+                title: 'ID'
+            },
+            {
+                key: 'status',
+                title: 'Status'
             }
         ]
 
@@ -68,6 +72,7 @@ export default {
                     query getAllActiveInstances {
                         getAllActiveInstances {
                             id
+                            status
                         }
                     }
                 `,

@@ -27,7 +27,7 @@ async function getInstancesOfSilo (siloId: string) : Promise<Instance[]> {
 }
 
 async function getAllActiveInstances () : Promise<Instance[]> {
-    const queryText = `SELECT * FROM ${schema}.instances where status = 'ACTIVE'`
+    const queryText = `SELECT * FROM ${schema}.instances where status = 'ACTIVE' OR status = 'PENDING'`
     const queryRes = await runQuery(queryText, [])
     return queryRes.rows.map((r: any) => transformDbRowToInstance(r))
 }
