@@ -2,13 +2,16 @@
     <div>
         <h4>Create Silo</h4>
         <n-form>
+            <label>Select Template</label>
             <n-select
                 v-model:value="silo.templateId"
                 v-on:update:value="onTemplateSelected"
                 required
                 :options="templatesForSelection" />
             <div
+                style="margin-top:20px;"
                 v-if="silo.userVariables && silo.userVariables.length">
+                <label>Set Properties</label>
                 <n-dynamic-input
                     v-model:value="silo.userVariables"
                     preset="pair"
@@ -69,11 +72,13 @@ export default {
                 `,
             })
             templates.value = tmplResponse.data.getAllTemplates
-            templatesForSelection.value = tmplResponse.data.getAllTemplates.map((t: any) => {
-                return {
-                    label: t.id + ' ' + t.recordData.providers + ' ' + t.recordData.type,
-                    value: t.id
-                }
+            templatesForSelection.value = tmplResponse.data.getAllTemplates
+                .filter((t: any) => t.recordData.type === 'SILO')
+                .map((t: any) => {
+                    return {
+                        label: t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
+                        value: t.id
+                    }
             })
             console.log(templates.value)
         }
