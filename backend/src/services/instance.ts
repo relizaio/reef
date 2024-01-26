@@ -90,7 +90,7 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
         "instance_id": instanceId
     }
     siloEntity.properties.forEach(prop => {
-        tfVarsObject[prop.key] = prop.value
+        if (prop.value) tfVarsObject[prop.key] = prop.value
     })
     utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
