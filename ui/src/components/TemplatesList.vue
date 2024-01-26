@@ -44,15 +44,36 @@ export default {
 
         const templateFields: DataTableColumns<any> = [
             {
+                key: 'repoUrl',
+                title: 'Git Repository',
+                render: (row: any) => {
+                    return row.recordData.repoUrl
+                }
+            },
+            {
+                key: 'repoPath',
+                title: 'Path within Repository',
+                render: (row: any) => {
+                    return row.recordData.repoPath
+                }
+            },
+            {
+                key: 'repoPointer',
+                title: 'Pointer',
+                render: (row: any) => {
+                    return row.recordData.repoPointer
+                }
+            },
+            {
                 key: 'type',
-                title: 'TYPE',
+                title: 'Type',
                 render: (row: any) => {
                     return row.recordData.type
                 }
             },
             {
                 key: 'providers',
-                title: 'PROVIDERS',
+                title: 'Providers',
                 render: (row: any) => {
                     return row.recordData.providers
                 }
