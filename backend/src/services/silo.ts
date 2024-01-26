@@ -50,7 +50,7 @@ async function getSilo (siloId: string) : Promise<Silo> {
 }
 
 async function getAllActiveSilos () : Promise<Silo[]> {
-    const queryText = `SELECT * FROM ${schema}.silos where status = 'ACTIVE'`
+    const queryText = `SELECT * FROM ${schema}.silos where status = 'ACTIVE' OR status = 'PENDING'`
     const queryRes = await runQuery(queryText, [])
     return queryRes.rows.map((r: any) => transformDbRowToSilo(r))
 }

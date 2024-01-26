@@ -43,7 +43,11 @@ export default {
         const siloFields: DataTableColumns<any> = [
             {
                 key: 'id',
-                title: 'id'
+                title: 'Id'
+            },
+            {
+                key: 'status',
+                title: 'Status'
             }
         ]
 
@@ -68,6 +72,7 @@ export default {
                     query getAllActiveSilos {
                         getAllActiveSilos {
                             id
+                            status
                         }
                     }
                 `,
