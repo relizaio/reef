@@ -85,7 +85,7 @@ export default {
             if (silo) {
                 templatesForSelection.value = templates.value
                     .filter((t: any) => {
-                        return (t.recordData.type === 'INSTANCE' &&
+                        return (t.recordData.type === 'INSTANCE' && t.recordData.parentTemplates &&
                         t.recordData.parentTemplates.includes(silo.template.id))
                     })
                     .map((t: any) => {
