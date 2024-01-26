@@ -115,7 +115,7 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
     console.log(`Creating Silo ${siloId}...`)
     const initializeSiloCmd = envVarCmd +
-        `cd ${constants.TF_SPACE}/${siloId} && terraform init && terraform plan && terraform apply -auto-approve`
+        `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu plan && tofu apply -auto-approve`
     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
     const parsedSiloOut = utils.parseTfOutput(initSiloData)
     const outSiloProps : Property[] = userVariables.slice()
@@ -160,7 +160,7 @@ async function destroySilo (siloId: string) {
             console.error('Could not locate aws account')
         }
     }
-    siloDestroyCmd += `cd ${constants.TF_SPACE}/${siloId} && terraform destroy -auto-approve`
+    siloDestroyCmd += `cd ${constants.TF_SPACE}/${siloId} && tofu destroy -auto-approve`
     await utils.shellExec('sh', ['-c', siloDestroyCmd])
     await utils.deleteDir(`${constants.TF_SPACE}/${siloId}`)
     archiveSiloInDb(siloId)

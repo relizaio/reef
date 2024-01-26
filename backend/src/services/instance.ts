@@ -131,7 +131,7 @@ async function createPendingInstanceInDb(instanceId: string, siloId: string, tem
 async function createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string) {
     const startTime = (new Date()).getTime()
     const initializeInstanceCmd = envVarCmd +
-        `cd ${constants.TF_SPACE}/${instanceId} && terraform init && terraform plan && terraform apply -auto-approve`
+        `cd ${constants.TF_SPACE}/${instanceId} && tofu init && tofu plan && tofu apply -auto-approve`
     const initInstanceData = await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
     console.log(initInstanceData)
     const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
@@ -178,7 +178,7 @@ const destroyInstance = async (instanceId: string) => {
             console.error(`Could not locate aws account on destroying instance ${instanceId}`)
         }
     }
-    instanceDestroyCmd += `cd ${constants.TF_SPACE}/${instanceId} && terraform destroy -auto-approve`
+    instanceDestroyCmd += `cd ${constants.TF_SPACE}/${instanceId} && tofu destroy -auto-approve`
     await utils.shellExec('sh', ['-c', instanceDestroyCmd])
     await utils.deleteDir(`${constants.TF_SPACE}/${instanceId}`)
     await archiveInDb(instanceId)
