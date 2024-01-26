@@ -23,7 +23,8 @@
 <script lang="ts">
 import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
 import { useStore } from 'vuex'
-import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
+import { NButton, NDataTable, NIcon, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
+import { Trash } from '@vicons/tabler'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
 import CreateInstance from './CreateInstance.vue'
@@ -48,6 +49,20 @@ export default {
             {
                 key: 'status',
                 title: 'Status'
+            },
+            {
+                key: 'controls',
+                title: 'Controls',
+                render: (row: any) => {
+                    return h(NIcon, {
+                            size: 22,
+                            class: 'icons clickable',
+                            title: 'Destroy Instance',
+                            onClick: () => destroyInstance(row.id)
+                        }, {
+                            default: () => h(Trash)
+                        })
+                }
             }
         ]
 
@@ -79,6 +94,20 @@ export default {
             })
             instances.value = instResponse.data.getAllActiveInstances
         }
+
+        async function destroyInstance (instanceId: string) {
+            await graphqlClient
+                .mutate({
+                    mutation: gql`
+                        mutation destroyInstance($instanceId: ID!) {
+                            destroyInstance(instanceId: $instanceId)
+                        }`,
+                    variables: {
+                        instanceId
+                    }
+                })
+        }
+
 
         const onCreate = async function () {
             loadInstances()
