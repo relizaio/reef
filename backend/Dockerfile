@@ -1,8 +1,8 @@
 FROM node:18-alpine3.17 as builder
-ADD https://releases.hashicorp.com/terraform/1.1.9/terraform_1.1.9_linux_amd64.zip /tmp/
-COPY terraform_1.1.9_SHA256SUMS /tmp/
-RUN cd /tmp && sha256sum -c terraform_1.1.9_SHA256SUMS
-RUN cd /tmp && unzip terraform_1.1.9_linux_amd64.zip
+ADD https://github.com/opentofu/opentofu/releases/download/v1.6.1/tofu_1.6.1_linux_amd64.zip /tmp/
+COPY tofu_SHA256SUMS /tmp/
+RUN cd /tmp && sha256sum -c tofu_SHA256SUMS
+RUN cd /tmp && unzip tofu_1.6.1_linux_amd64.zip
 
 FROM node:18-alpine3.17 as package
 ARG CI_ENV=noci
@@ -10,7 +10,7 @@ ARG GIT_COMMIT=git_commit_undefined
 ARG GIT_BRANCH=git_branch_undefined
 ARG VERSION=not_versioned
 RUN apk add openssh git
-COPY --from=builder /tmp/terraform /usr/local/bin/
+COPY --from=builder /tmp/tofu /usr/local/bin/
 RUN mkdir /app
 RUN echo "version=$VERSION" > /app/version && echo "commit=$GIT_COMMIT" >> /app/version && echo "branch=$GIT_BRANCH" >> /app/version
 WORKDIR /app
