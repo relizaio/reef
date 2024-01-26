@@ -109,7 +109,7 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
         silo_identifier: siloId
     }
     userVariables.forEach(prop => {
-        siloTfVarsObj[prop.key] = prop.value
+        if (prop.value) siloTfVarsObj[prop.key] = prop.value
     })
     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
