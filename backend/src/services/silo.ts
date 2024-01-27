@@ -6,6 +6,7 @@ import constants from '../utils/constants'
 import * as templateService from './template'
 import { ProviderType } from '../model/Template'
 import account from './account'
+import secret from './secret'
 
 async function saveToDb (silo: Silo) {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
@@ -118,7 +119,19 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
         `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu plan && tofu apply -auto-approve`
     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
     const parsedSiloOut = utils.parseTfOutput(initSiloData)
-    const outSiloProps : Property[] = userVariables.slice()
+    const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : Property) => {
+        if (uv.sensitivity === "nonsensitive") {
+            return uv
+        } else {
+            const secretId = await secret.createSecret(uv.value)
+            const sensitiveProp: Property = {
+                key: uv.key,
+                value: secretId,
+                sensitivity: "sensitive"
+            }
+            return sensitiveProp
+        }
+    }))
     Object.keys(parsedSiloOut).forEach((key: string) => {
         const sp : Property = {
             key,
