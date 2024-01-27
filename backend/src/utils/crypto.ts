@@ -5,7 +5,7 @@ const algorithm = 'aes-256-cbc';
 const hmacAlgorithm = 'sha256'
 const keyLength = 32 // key length is based on algorithm, for aes-256-cbc it's 32 bytes
 
-const PASS_PHRASE = process.env.CRYPTO_PASS_PHASE ? process.env.CRYPTO_PASS_PHASE : 'defaultPassPhraseChangeOnProd'
+const PASS_PHRASE = process.env.CRYPTO_PASS_PHRASE ? process.env.CRYPTO_PASS_PHRASE : 'defaultPassPhraseChangeOnProd'
 const HMAC_SECRET = process.env.CRYPTO_HMAC_SECRET ? process.env.CRYPTO_HMAC_SECRET : 'defaultHmacSecretChangeOnProd'
 
 async function encrypt (plainText: string, inputPassphrase?: string, inputHmacSecret?: string) {

@@ -17,8 +17,8 @@ class AwsAccountDao extends AccountProvider {
     providerName = constants.AWS_ACCOUNT_PROVIDER
 
     region: string = ''
-    accessKey: CipherDao = new CipherDao
-    secretKey: CipherDao = new CipherDao
+    accessKey: CipherDao = new CipherDao()
+    secretKey: CipherDao = new CipherDao()
 }
 
 class AzureAccount extends AccountProvider {
