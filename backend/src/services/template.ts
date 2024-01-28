@@ -13,9 +13,14 @@ async function getTemplate (templateId: string) : Promise<Template> {
     return dbRowToTemplate(queryRes.rows[0])
 }
 
-async function listTemplates () : Promise<Template[]> {
-    const queryText = `SELECT * FROM ${schema}.templates`
-    const queryRes = await runQuery(queryText, [])
+async function listTemplates (status?: string) : Promise<Template[]> {
+    let queryText = `SELECT * FROM ${schema}.templates`
+    let queryParams: string[] = []
+    if (status) {
+        queryText += ` WHERE status = $1`
+        queryParams = [status]
+    }
+    const queryRes = await runQuery(queryText, queryParams)
     let templates: Template[] = []
     if (queryRes.rows && queryRes.rows.length) {
         templates = queryRes.rows.map((row: any) => dbRowToTemplate(row)) 

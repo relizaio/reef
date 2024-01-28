@@ -9,7 +9,8 @@ const typeDefs = gql`
         getAllActiveInstances: [Instance],
         getAllActiveAccounts: [Account],
         getInstancesOfSilo(siloId: ID!): [Instance],
-        getAllTemplates: [Template]
+        getAllTemplates: [Template],
+        getTemplates(status: String): [Template]
     },
     type Mutation {
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,

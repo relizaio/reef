@@ -96,8 +96,8 @@ export default {
         async function loadTemplates() {
             const tmplResponse = await graphqlClient.query({
                 query: gql`
-                    query getAllTemplates {
-                        getAllTemplates {
+                    query getTemplates($status: String) {
+                        getTemplates(status: $status) {
                             id
                             status
                             recordData {
@@ -116,9 +116,11 @@ export default {
                         }
                     }
                 `,
+                variables: {
+                    status: 'ACTIVE'
+                }
             })
-            templates.value = tmplResponse.data.getAllTemplates
-            console.log(templates.value)
+            templates.value = tmplResponse.data.getTemplates
         }
 
         const onCreate = async function () {
