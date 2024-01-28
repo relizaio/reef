@@ -52,8 +52,8 @@ export default {
         async function loadTemplates() {
             const tmplResponse = await graphqlClient.query({
                 query: gql`
-                    query getAllTemplates {
-                        getAllTemplates {
+                    query getTemplates($status: String) {
+                        getTemplates(status: $status) {
                             id
                             status
                             recordData {
@@ -70,9 +70,12 @@ export default {
                         }
                     }
                 `,
+                variables: {
+                    status: 'ACTIVE'
+                }
             })
-            templates.value = tmplResponse.data.getAllTemplates
-            templatesForSelection.value = tmplResponse.data.getAllTemplates
+            templates.value = tmplResponse.data.getTemplates
+            templatesForSelection.value = tmplResponse.data.getTemplates
                 .filter((t: any) => t.recordData.type === 'SILO')
                 .map((t: any) => {
                     return {
