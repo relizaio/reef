@@ -62,7 +62,7 @@ Pre-requisites - create a resource group in Azure with valid DNS zone in such gr
 ### Run local db:
 
 ```
-docker run -d --name reliza-ephemeral-postgres -e POSTGRES_PASSWORD=password -p 5439:5432 postgres:15
+docker run -d --name reliza-ephemeral-postgres -e POSTGRES_PASSWORD=password -p 5439:5432 postgres:16
 ```
 
 ### Flyway command:
