@@ -120,7 +120,7 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
     const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
     const parsedSiloOut = utils.parseTfOutput(initSiloData)
     const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : Property) => {
-        if (uv.sensitivity === "nonsensitive") {
+        if (uv.sensitivity !== "sensitive") {
             return uv
         } else {
             const secretId = await secret.createSecret(uv.value)
