@@ -93,7 +93,7 @@ export default {
                     })
                     .map((t: any) => {
                         return {
-                            label: t.id + ' ' + t.recordData.providers + ' ' + t.recordData.type,
+                            label: t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
                             value: t.id
                         }
                     })
