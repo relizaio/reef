@@ -1,4 +1,4 @@
-import { Template, TemplateInput, TemplateData } from '../model/Template'
+import { Template, TemplateInput, TemplateData, TfVarDefinition } from '../model/Template'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
@@ -10,7 +10,7 @@ async function getTemplate (templateId: string) : Promise<Template> {
     const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
     const queryParams = [templateId]
     const queryRes = await runQuery(queryText, queryParams)
-    return dbRowToTemplate(queryRes.rows[0])
+    return await dbRowToTemplate(queryRes.rows[0])
 }
 
 async function listTemplates (status?: string) : Promise<Template[]> {
@@ -23,17 +23,18 @@ async function listTemplates (status?: string) : Promise<Template[]> {
     const queryRes = await runQuery(queryText, queryParams)
     let templates: Template[] = []
     if (queryRes.rows && queryRes.rows.length) {
-        templates = queryRes.rows.map((row: any) => dbRowToTemplate(row)) 
+        templates = await Promise.all(queryRes.rows.map(async (row: any) => await dbRowToTemplate(row, true)))
     }
     return templates
 }
 
-function dbRowToTemplate (dbRow: any) : Template {
+async function dbRowToTemplate (dbRow: any, withoutValues?: boolean) : Promise<Template> {
     const template : Template = {
         id: dbRow.uuid,
         status: dbRow.status,
         recordData: dbRow.record_data
     }
+    if (!withoutValues) template.recordData.userVariables = await resolveTfVariables(template)
     return template
 }
 
@@ -57,17 +58,20 @@ async function createTemplate (templateInput: TemplateInput): Promise<Template> 
     template.recordData.providers = templateInput.providers
     template.recordData.authAccounts = templateInput.authAccounts
     template.recordData.parentTemplates = templateInput.parentTemplates
+    
+    await resolveTfVariables(template) // verifies git connectivity
 
-    // parse supported user variables from actual template
+    await saveToDb(template)
+    return template
+}
+
+async function resolveTfVariables (template: Template):  Promise<TfVarDefinition[]> {
     const gco = await gitCheckoutObjectFromTemplate(template)
     const checkoutPaths = await utils.gitCheckout(gco)
     const tfVars = await utils.parseTfDirectoryForVariables(checkoutPaths.fullTemplatePath)
     await utils.deleteDir(checkoutPaths.checkoutPath)
     if (checkoutPaths.utilPath) await utils.deleteDir(checkoutPaths.utilPath)
-    
-    template.recordData.userVariables = tfVars
-    await saveToDb(template)
-    return template
+    return tfVars
 }
 
 async function gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCheckoutObject> {
