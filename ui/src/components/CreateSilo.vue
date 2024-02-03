@@ -62,10 +62,6 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
-                                userVariables {
-                                    key
-                                    value
-                                }
                             }
                         }
                     }
@@ -86,8 +82,36 @@ export default {
             console.log(templates.value)
         }
 
+        async function loadTemplateWithVariables (templateId: string) {
+            const tmplResponse = await graphqlClient.query({
+                query: gql`
+                    query getTemplate($templateId: ID!) {
+                        getTemplate(templateId: $templateId) {
+                            id
+                            status
+                            recordData {
+                                type
+                                repoUrl
+                                repoPath
+                                repoPointer
+                                providers
+                                userVariables {
+                                    key
+                                    value
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: {
+                    templateId
+                }
+            })
+            return tmplResponse.data.getTemplate
+        }
+
         async function onTemplateSelected () {
-            const selectedTemplate = templates.value.filter(t => t.id === silo.value.templateId)[0]
+            const selectedTemplate = await loadTemplateWithVariables(silo.value.templateId)
             silo.value.userVariables = commonFunctions.deepCopy(selectedTemplate.recordData.userVariables)
         }
 
