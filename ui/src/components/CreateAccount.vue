@@ -64,6 +64,26 @@
             </n-form-item>
             <n-button @click="createAzureAccount" type="success">Create Azure Account</n-button>
         </n-form>
+        <n-form
+            v-if="selectedProviderType === 'GIT'"
+            :model="gitAccount">
+            <n-form-item
+                    path="username"
+                    label="Username">
+                <n-input
+                    placeholder="Enter Username"
+                    v-model:value="gitAccount.username" />
+            </n-form-item>
+            <n-form-item
+                    path="token"
+                    label="Password or Token">
+                <n-input
+                    placeholder="Enter Password or Token"
+                    type="password"
+                    v-model:value="gitAccount.token" />
+            </n-form-item>
+            <n-button @click="createGitAccount" type="success">Create Git Account</n-button>
+        </n-form>
     </div>
 </template>
 
@@ -137,8 +157,25 @@ export default {
             console.log(gqlRes)
         }
 
+        async function createGitAccount () {
+            const gqlRes = await graphqlClient
+                .mutate({
+                    mutation: gql`
+                        mutation CreateGitAccount($gitAccount: GitAccountInput!) {
+                            createGitAccount(gitAccount: $gitAccount) {
+                                id
+                            }
+                        }`,
+                    variables: {
+                        gitAccount: gitAccount.value
+                    }
+                })
+            console.log(gqlRes)
+        }
+
         return {
             createAzureAccount,
+            createGitAccount,
             awsAccount,
             azureAccount,
             gitAccount,
