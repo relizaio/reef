@@ -68,7 +68,7 @@ async function archiveInDb (instanceId: string) {
     return queryRes.rows[0]
 }
 
-async function createInstance (siloId: string, templateId: string) : Promise<Instance | null> {
+async function createInstance (siloId: string, templateId: string, userVariables?: Property[]) : Promise<Instance | null> {
     const siloEntity = await silo.getSilo(siloId)
 
     const instanceTemplate = await templateService.default.getTemplate(templateId)
@@ -94,6 +94,11 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
     siloEntity.properties.forEach(prop => {
         if (prop.value) tfVarsObject[prop.key] = prop.value
     })
+    if (userVariables && userVariables.length) {
+        userVariables.forEach(prop => {
+            if (prop.value) tfVarsObject[prop.key] = prop.value
+        })
+    }
     utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
     let initInstEnvVarCmd = ''

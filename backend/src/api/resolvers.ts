@@ -61,7 +61,8 @@ const resolvers = {
         createInstance: async (parent: any, params: any) => {
             const siloId : string = params.siloId
             const templateId : string = params.templateId
-            return await instance.createInstance(siloId, templateId)
+            const userVariables : Property[] = params.userVariables
+            return await instance.createInstance(siloId, templateId, userVariables)
         },
         destroyInstance: (parent: any, params: any) => {
             const instanceId : string = params.instanceId
