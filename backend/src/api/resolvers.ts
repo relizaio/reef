@@ -17,6 +17,10 @@ const resolvers = {
             const instanceId : string = params.instanceId
             return await instance.getInstance(instanceId)
         },
+        getTemplate: async (parent: any, params: any) => {
+            const templateId : string = params.templateId
+            return await template.getTemplate(templateId)
+        },
         getAllActiveInstances: async () => {
             return await instance.getAllActiveInstances()
         },
