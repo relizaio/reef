@@ -73,7 +73,9 @@ async function createInstance (siloId: string, templateId: string) : Promise<Ins
 
     const instanceTemplate = await templateService.default.getTemplate(templateId)
 
-    // TODO: validate that instance template has silo template as parent
+    if (!instanceTemplate.recordData.parentTemplates || !instanceTemplate.recordData.parentTemplates.length) {
+        throw new Error("Cannot create an instance without a parent silo")
+    }
 
     const gco = await templateService.default.gitCheckoutObjectFromTemplate(instanceTemplate)
 
