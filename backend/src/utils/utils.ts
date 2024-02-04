@@ -135,6 +135,7 @@ async function parseFileIntoTfVars (path: string) : Promise<TfVarDefinition[]> {
             curVar.key = varName
         } else if (inVar && line.includes(' default ')) {
             curVar.hasDefault = true
+            curVar.value = line.split('default')[1].replaceAll(' = ', '').replaceAll('"', '').trim()
         } else if (inVar && line.includes(' type ')) {
             // TODO type
         }

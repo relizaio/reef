@@ -57,6 +57,7 @@ class TfVarDefinition {
     type: TfVariableType = TfVariableType.STRING
     typestring: string = '' // to define complex types, i.e. objects or lists
     hasDefault: boolean = false
+    value: string | null = null // default value
 }
 
 export { Template, TemplateInput, TemplateType, TfVarDefinition, ProviderType, TemplateData }
