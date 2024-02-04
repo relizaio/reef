@@ -41,7 +41,6 @@ import { useStore } from 'vuex'
 import { NButton, NDynamicInput, NForm, NFormItem, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
-import commonFunctions from '@/utils/commonFunctions'
 
 export default {
     name: 'CreateInstance',
@@ -58,10 +57,11 @@ export default {
         const templates: Ref<any[]> = ref([])
         const templatesForSelection: Ref<any[]> = ref([])
 
+        const initUserVars: any[] = []
         const instance = ref({
             templateId: '',
             siloId: '',
-            userVariables: []
+            userVariables: initUserVars
         })
 
         async function loadTemplates() {
@@ -136,7 +136,13 @@ export default {
 
         async function onInstanceTemplateSelected () {
             const selectedTemplate = await loadTemplateWithVariables(instance.value.templateId)
-            instance.value.userVariables = commonFunctions.deepCopy(selectedTemplate.recordData.userVariables)
+            const silo = silos.value.find((a: any) => a.id === instance.value.siloId)
+            const existingSiloKeys = silo.properties.map((prop: any) => prop.key)
+            const userVars: any[] = []
+            selectedTemplate.recordData.userVariables.forEach((uv: any) => {
+                if (!existingSiloKeys.includes(uv.key)) userVars.push(uv)
+            });
+            instance.value.userVariables = userVars
         }
 
         async function createInstance () {
@@ -166,6 +172,9 @@ export default {
                                     providers
                                     parentTemplates
                                 }
+                            }
+                            properties {
+                                key
                             }
                         }
                     }
