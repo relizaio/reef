@@ -17,9 +17,18 @@
                     label="Template">
                 <n-select
                     v-model:value="instance.templateId"
-                    v-on:update:value="updateTemplatesForSelection"
+                    v-on:update:value="onInstanceTemplateSelected"
                     required
                     :options="templatesForSelection" />
+            </n-form-item>
+            <n-form-item
+                v-if="instance.siloId && instance.userVariables && instance.userVariables.length">
+                <label>Set Properties</label>
+                <n-dynamic-input
+                    v-model:value="instance.userVariables"
+                    preset="pair"
+                    key-placeholder="Please input the key"
+                    value-placeholder="Please input the value" />
             </n-form-item>
             <n-button @click="createInstance" type="success">Create</n-button>
         </n-form>
@@ -51,7 +60,8 @@ export default {
 
         const instance = ref({
             templateId: '',
-            siloId: ''
+            siloId: '',
+            userVariables: []
         })
 
         async function loadTemplates() {
@@ -68,10 +78,6 @@ export default {
                                 repoPointer
                                 providers
                                 parentTemplates
-                                userVariables {
-                                    key
-                                    value
-                                }
                             }
                         }
                     }
@@ -81,6 +87,34 @@ export default {
                 }
             })
             templates.value = tmplResponse.data.getTemplates
+        }
+
+        async function loadTemplateWithVariables (templateId: string) {
+            const tmplResponse = await graphqlClient.query({
+                query: gql`
+                    query getTemplate($templateId: ID!) {
+                        getTemplate(templateId: $templateId) {
+                            id
+                            status
+                            recordData {
+                                type
+                                repoUrl
+                                repoPath
+                                repoPointer
+                                providers
+                                userVariables {
+                                    key
+                                    value
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: {
+                    templateId
+                }
+            })
+            return tmplResponse.data.getTemplate
         }
 
         async function updateTemplatesForSelection() {
@@ -100,12 +134,17 @@ export default {
             }
         }
 
+        async function onInstanceTemplateSelected () {
+            const selectedTemplate = await loadTemplateWithVariables(instance.value.templateId)
+            instance.value.userVariables = commonFunctions.deepCopy(selectedTemplate.recordData.userVariables)
+        }
+
         async function createInstance () {
             const gqlRes = await graphqlClient
                 .mutate({
                     mutation: gql`
-                        mutation CreateInstance($siloId: ID!, $templateId: ID!) {
-                            createInstance(siloId: $siloId, templateId: $templateId) {
+                        mutation CreateInstance($siloId: ID!, $templateId: ID!, $userVariables: [KeyValueInput]) {
+                            createInstance(siloId: $siloId, templateId: $templateId, userVariables: $userVariables) {
                                 id
                             }
                         }`,
@@ -151,6 +190,7 @@ export default {
         return {
             createInstance,
             instance,
+            onInstanceTemplateSelected,
             silosForSelection,
             templatesForSelection,
             updateTemplatesForSelection
