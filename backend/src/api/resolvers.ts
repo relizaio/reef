@@ -32,7 +32,8 @@ const resolvers = {
         },
         getInstancesOfSilo: async (parent: any, params: any) => {
             const siloId : string = params.siloId
-            return await instance.getInstancesOfSilo(siloId)
+            const statuses : [string] = params.statuses
+            return await instance.getInstancesOfSilo(siloId, statuses)
         },
         getTemplates: async (parent: any, params: any) => {
             const status : string = params.status

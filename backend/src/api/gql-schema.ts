@@ -9,7 +9,7 @@ const typeDefs = gql`
         getAllActiveSilos: [Silo],
         getAllActiveInstances: [Instance],
         getAllActiveAccounts: [Account],
-        getInstancesOfSilo(siloId: ID!): [Instance],
+        getInstancesOfSilo(siloId: ID!, statuses: [String]): [Instance],
         getAllTemplates: [Template],
         getTemplates(status: String): [Template]
     },
