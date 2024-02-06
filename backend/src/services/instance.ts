@@ -20,7 +20,7 @@ async function getInstance (instanceId: string) : Promise<Instance> {
 async function getInstancesOfSilo (siloId: string, statuses?: [string]) : Promise<Instance[]> {
     const siloUuidForDb = siloId.replace(constants.SILO_PREFIX, '')
     let queryText = `SELECT * FROM ${schema}.instances WHERE silo_id = $1`
-    if (statuses && statuses.length) queryText += " AND status in ($2)"
+    if (statuses && statuses.length) queryText += " AND status = ANY($2)"
     let queryParams: any[] = [siloUuidForDb]
     if (statuses && statuses.length) queryParams.push(statuses)
     const queryRes = await runQuery(queryText, queryParams)
