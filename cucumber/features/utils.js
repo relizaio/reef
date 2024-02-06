@@ -86,14 +86,15 @@ async function getInstancesOfSilo (siloId) {
     const resData = await gqlClient
         .query({
             query: gql`
-                query GetInstancesOfSilo($siloId: ID!) {
-                    getInstancesOfSilo(siloId: $siloId) {
+                query GetInstancesOfSilo($siloId: ID!, $statuses: [String]) {
+                    getInstancesOfSilo(siloId: $siloId, statuses: $statuses) {
                         id
                         status
                     }
                 }`,
             variables: {
-                "siloId": siloId
+                "siloId": siloId,
+                "statuses": ["ACTIVE", "PENDING"]
             }
         })
     return resData.data.getInstancesOfSilo
