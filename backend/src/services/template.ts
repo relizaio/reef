@@ -6,11 +6,11 @@ import { GitCheckoutObject } from '../model/GitCheckoutObject'
 import { GitAccount } from '../model/Account'
 import account from './account'
 
-async function getTemplate (templateId: string) : Promise<Template> {
+async function getTemplate (templateId: string, withoutValues?: boolean) : Promise<Template> {
     const queryText = `SELECT * FROM ${schema}.templates where uuid = $1`
     const queryParams = [templateId]
     const queryRes = await runQuery(queryText, queryParams)
-    return await dbRowToTemplate(queryRes.rows[0])
+    return await dbRowToTemplate(queryRes.rows[0], withoutValues)
 }
 
 async function listTemplates (status?: string) : Promise<Template[]> {

@@ -172,7 +172,7 @@ const destroyInstance = async (instanceId: string) => {
     let startTime = (new Date()).getTime()
     console.log(`Destroying TF instance ${instanceId}...`)
     const instance = await getInstance(instanceId)
-    const template = await templateService.default.getTemplate(instance.template_id)
+    const template = await templateService.default.getTemplate(instance.template_id, true)
     let instanceDestroyCmd = ''
     if (template.recordData.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)

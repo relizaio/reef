@@ -159,7 +159,7 @@ async function destroySilo (siloId: string) {
     let startTime = (new Date()).getTime()
     console.log(`Destroying TF Silo ${siloId}...`)
     const silo = await getSilo(siloId)
-    const template = await templateService.default.getTemplate(silo.template_id)
+    const template = await templateService.default.getTemplate(silo.template_id, true)
     let siloDestroyCmd = ''
     if (template.recordData.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)
