@@ -7,7 +7,6 @@ import { Instance } from '../model/Instance'
 import { Property } from '../model/Property'
 import { runQuery, schema } from '../utils/pgUtils'
 import { ProviderType } from '../model/Template'
-import { AzureAccount } from '../model/Account'
 
 
 async function getInstance (instanceId: string) : Promise<Instance> {
