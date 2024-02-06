@@ -124,7 +124,8 @@ Then('I register Instance template', async () => {
             "repoPointer": "main",
             "repoUrl": scenarioContext.gitRepo,
             "type": "INSTANCE",
-            "authAccounts": authAccounts
+            "authAccounts": authAccounts,
+            "parentTemplates": [scenarioContext.siloTemplate]
         }
     } else if (scenarioContext.awsAccount) {
         authAccounts.push(scenarioContext.awsAccount)
@@ -134,7 +135,8 @@ Then('I register Instance template', async () => {
             "repoPointer": "main",
             "repoUrl": scenarioContext.gitRepo,
             "type": "INSTANCE",
-            "authAccounts": authAccounts
+            "authAccounts": authAccounts,
+            "parentTemplates": [scenarioContext.siloTemplate]
         }
     }
     const gqlRes = await gqlClient
