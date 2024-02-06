@@ -38,6 +38,7 @@ function transformDbRowToInstance(dbRow: any): Instance {
         id: constants.INSTANCE_PREFIX + dbRow.uuid,
         status: dbRow.status,
         template_id: dbRow.template_id,
+        template_pointer: dbRow.template_pointer,
         silo_id: dbRow.silo_id,
         properties: dbRow.properties
     }
@@ -47,8 +48,8 @@ function transformDbRowToInstance(dbRow: any): Instance {
 async function saveToDb (instance: Instance) {
     const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
     const siloUuidForDb = instance.silo_id.replace(constants.SILO_PREFIX, '')
-    const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, template_id, properties) values ($1, $2, $3, $4, $5) RETURNING *`
-    const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, instance.template_id, JSON.stringify(instance.properties)]
+    const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, template_id, template_pointer, properties) values ($1, $2, $3, $4, $5, $6) RETURNING *`
+    const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, instance.template_id, instance.template_pointer, JSON.stringify(instance.properties)]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
@@ -83,6 +84,7 @@ async function createInstance (siloId: string, templateId: string, userVariables
     const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
     
     const instSourcePaths = await utils.gitCheckout(gco)
+    const templatePointer = await utils.shellExec('sh', ['-c', `git -C ${instSourcePaths.checkoutPath} log --pretty=tformat:"%H" -1`])
     await utils.copyDir(instSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${instanceId}`)
     await utils.deleteDir(instSourcePaths.checkoutPath)
     if (instSourcePaths.utilPath) await utils.deleteDir(instSourcePaths.utilPath)
@@ -103,7 +105,7 @@ async function createInstance (siloId: string, templateId: string, userVariables
     utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
     console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
     let initInstEnvVarCmd = ''
-    const respInstance = await createPendingInstanceInDb(instanceId, siloId, templateId)
+    const respInstance = await createPendingInstanceInDb(instanceId, siloId, templateId, templatePointer)
     if (instanceTemplate.recordData.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(instanceTemplate.recordData.authAccounts)
         if (azureAct) {
@@ -120,23 +122,24 @@ async function createInstance (siloId: string, templateId: string, userVariables
             console.error('missing aws account for template = ' + templateId)
         }
     }
-    createInstanceTfRoutine(instanceId, siloId, initInstEnvVarCmd, templateId)
+    createInstanceTfRoutine(instanceId, siloId, initInstEnvVarCmd, templateId, templatePointer)
     return respInstance
 }
 
-async function createPendingInstanceInDb(instanceId: string, siloId: string, templateId: string) {
+async function createPendingInstanceInDb(instanceId: string, siloId: string, templateId: string, templatePointer: string) {
     const pendingInstance : Instance = {
         id: instanceId,
         status: constants.STATUS_PENDING,
         silo_id: siloId,
         template_id: templateId,
+        template_pointer: templatePointer,
         properties: []
     }
     await saveToDb(pendingInstance)
     return pendingInstance
 }
 
-async function createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string) {
+async function createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string, templatePointer: string) {
     const startTime = (new Date()).getTime()
     const initializeInstanceCmd = envVarCmd +
         `cd ${constants.TF_SPACE}/${instanceId} && tofu init && tofu plan && tofu apply -auto-approve`
@@ -157,6 +160,7 @@ async function createInstanceTfRoutine (instanceId: string, siloId: string, envV
         status: constants.STATUS_ACTIVE,
         silo_id: siloId,
         template_id: templateId,
+        template_pointer: templatePointer,
         properties: outInstanceProps
     }
     updateInstanceInDb(outInstance)

@@ -6,6 +6,7 @@ class Instance {
     status: string = constants.STATUS_ACTIVE
     silo_id: string = ''
     template_id: string = ''
+    template_pointer: string = '' // git commit hash
     properties : Property[] = []
 }
 

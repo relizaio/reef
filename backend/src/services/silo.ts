@@ -10,16 +10,16 @@ import secret from './secret'
 
 async function saveToDb (silo: Silo) {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
-    const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, properties) values ($1, $2, $3, $4) RETURNING *`
-    const queryParams = [siloUuidForDb, silo.status, silo.template_id, JSON.stringify(silo.properties)]
+    const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, template_pointer, properties) values ($1, $2, $3, $4, $5) RETURNING *`
+    const queryParams = [siloUuidForDb, silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties)]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
 
 async function updateSiloDbRecord (silo: Silo): Promise<Silo> {
     const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
-    const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, properties = $3 where uuid = $4 RETURNING *`
-    const queryParams = [silo.status, silo.template_id, JSON.stringify(silo.properties), siloUuidForDb]
+    const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, template_pointer = $3, properties = $4 where uuid = $5 RETURNING *`
+    const queryParams = [silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties), siloUuidForDb]
     const queryRes = await runQuery(queryText, queryParams)
     return queryRes.rows[0]
 }
@@ -36,6 +36,7 @@ function transformDbRowToSilo(dbRow: any): Silo {
         id: constants.SILO_PREFIX + dbRow.uuid,
         status: dbRow.status,
         template_id: dbRow.template_id,
+        template_pointer: dbRow.template_pointer,
         properties: dbRow.properties,
         instance_templates: dbRow.instance_templates
     }
@@ -61,11 +62,12 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
     const template = await templateService.default.getTemplate(templateId)
     const gco = await templateService.default.gitCheckoutObjectFromTemplate(template)
     const siloSourcePaths = await utils.gitCheckout(gco)
+    const templatePointer = await utils.shellExec('sh', ['-c', `git -C ${siloSourcePaths.checkoutPath} log --pretty=tformat:"%H" -1`])
     await utils.copyDir(siloSourcePaths.fullTemplatePath, `./${constants.TF_SPACE}/${siloId}`)
     await utils.deleteDir(siloSourcePaths.checkoutPath)
     if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
     let initSiloEnvVarCmd = ''
-    const respSilo = await createPendingSiloInDb(siloId, templateId)
+    const respSilo = await createPendingSiloInDb(siloId, templateId, templatePointer)
     if (template.recordData.providers.includes(ProviderType.AZURE)) {
         const azureAct = await account.getAzureAccountFromSet(template.recordData.authAccounts)
         if (azureAct) {
@@ -82,15 +84,16 @@ async function createSilo (templateId: string, userVariables: Property[]) : Prom
             console.error('missing aws account for template = ' + template.id)
         }
     }
-    createSiloTfRoutine(siloId, template.id, initSiloEnvVarCmd, userVariables)
+    createSiloTfRoutine(siloId, template.id, templatePointer, initSiloEnvVarCmd, userVariables)
     return respSilo
 }
 
-async function createPendingSiloInDb(siloId: string, templateId: string) {
+async function createPendingSiloInDb(siloId: string, templateId: string, templatePointer: string) {
     const pendingSilo : Silo = {
         id: siloId,
         status: constants.STATUS_PENDING,
         template_id: templateId,
+        template_pointer: templatePointer,
         properties: [],
         instance_templates: []
     }
@@ -104,7 +107,7 @@ async function setInstanceTemplatesOnSilo(siloId: string, templateIds: string[])
     await updateSiloDbRecord(silo)
 }
 
-async function createSiloTfRoutine (siloId: string, templateId: string, envVarCmd: string, userVariables: Property[]) {
+async function createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: Property[]) {
     const startTime = (new Date()).getTime()
     const siloTfVarsObj: any = {
         silo_identifier: siloId
@@ -143,6 +146,7 @@ async function createSiloTfRoutine (siloId: string, templateId: string, envVarCm
         id: siloId,
         status: constants.STATUS_ACTIVE,
         template_id: templateId,
+        template_pointer: templatePointer,
         properties: outSiloProps,
         instance_templates: []
     }

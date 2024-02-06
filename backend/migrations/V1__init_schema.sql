@@ -4,7 +4,8 @@ CREATE TABLE silos (
     last_updated_date timestamptz NOT NULL default now(),
     schema_version integer NOT NULL default 0,
     status text NOT NULL default 'ACTIVE',
-    template_id uuid,
+    template_id uuid NULL,
+    template_pointer text NULL,
     properties jsonb NULL,
     instance_templates jsonb NULL
 );
@@ -16,6 +17,7 @@ CREATE TABLE instances (
     schema_version integer NOT NULL default 0,
     silo_id uuid NOT NULL,
     template_id uuid NOT NULL,
+    template_pointer text NULL,
     status text NOT NULL default 'ACTIVE',
     properties jsonb NULL
 );
