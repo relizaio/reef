@@ -11,5 +11,7 @@ export default {
     INSTANCE_PREFIX: "instance-",
     GIT_PREFIX: "git-",
     CRED_PREFIX: "cred-",
-    TF_SPACE: "tf_space"
+    TF_SPACE: "tf_space",
+    CREATE_OPERATION: "create",
+    DESTROY_OPERATION: "destroy"
 }
