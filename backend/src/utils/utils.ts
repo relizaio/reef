@@ -205,9 +205,12 @@ function getAwsEnvTfPrefix (awsAct: AwsAccount): string {
     `export AWS_SECRET_ACCESS_KEY=${awsAct.secretKey}; `
 }
 
-function constructTfPipeOut (operation: string): string {
+function constructTfPipeOutFileName (operation: string) : string {
     const curDate = new Date()
-    const fname = curDate.getUTCFullYear() + '-' + curDate.getUTCMonth() + '-' + curDate.getUTCDate() + '_' + curDate.getUTCHours() + '-' + curDate.getUTCMinutes() + '_' + operation + '_' + 'tf_out'
+    return curDate.getUTCFullYear() + '-' + curDate.getUTCMonth() + '-' + curDate.getUTCDate() + '_' + curDate.getUTCHours() + '-' + curDate.getUTCMinutes() + '_' + operation + '_' + 'tf_out'
+}
+
+function constructTfPipeOut (fname: string): string {
     return ` > ${fname} 2>&1`
 }
 
@@ -219,6 +222,7 @@ type GitCheckoutPaths = {
 
 
 export default {
+    constructTfPipeOutFileName,
     constructTfPipeOut,
     copyDir,
     deleteDir,

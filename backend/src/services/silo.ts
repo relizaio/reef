@@ -118,9 +118,11 @@ async function createSiloTfRoutine (siloId: string, templateId: string, template
     const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
     utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
     console.log(`Creating Silo ${siloId}...`)
+    const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
     const initializeSiloCmd = envVarCmd +
-        `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(constants.CREATE_OPERATION)
-    const initSiloData = await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+        `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(fname)
+    await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+    const initSiloData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${siloId}/${fname}`])
     const parsedSiloOut = utils.parseTfOutput(initSiloData)
     const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : Property) => {
         if (uv.sensitivity !== "sensitive") {
@@ -177,7 +179,8 @@ async function destroySilo (siloId: string) {
             console.error('Could not locate aws account')
         }
     }
-    siloDestroyCmd += `cd ${constants.TF_SPACE}/${siloId} && tofu destroy -auto-approve`  + utils.constructTfPipeOut(constants.DESTROY_OPERATION)
+    const fname = utils.constructTfPipeOutFileName(constants.DESTROY_OPERATION)
+    siloDestroyCmd += `cd ${constants.TF_SPACE}/${siloId} && tofu destroy -auto-approve`  + utils.constructTfPipeOut(fname)
     await utils.shellExec('sh', ['-c', siloDestroyCmd])
     await utils.deleteDir(`${constants.TF_SPACE}/${siloId}`)
     archiveSiloInDb(siloId)
