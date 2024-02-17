@@ -17,7 +17,7 @@ const typeDefs = gql`
         createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
         updateSilo(siloId: ID!, templateIds: [ID]): Silo,
         destroySilo(siloId: ID!): Boolean,
-        createInstance(siloId: ID!, templateId: ID!, userVariables: [KeyValueInput]): Instance,
+        createInstance(siloId: ID!, templateId: ID!, instanceId: ID, userVariables: [KeyValueInput]): Instance,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
         createAwsAccount(awsAccount: AwsAccountInput!): Account,

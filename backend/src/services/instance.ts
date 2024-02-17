@@ -70,7 +70,7 @@ async function archiveInDb (instanceId: string) {
     return queryRes.rows[0]
 }
 
-async function createInstance (siloId: string, templateId: string, userVariables?: Property[]) : Promise<Instance | null> {
+async function createInstance (siloId: string, templateId: string, instanceId?: string, userVariables?: Property[]) : Promise<Instance | null> {
     const siloEntity = await silo.getSilo(siloId)
 
     const instanceTemplate = await templateService.default.getTemplate(templateId)
@@ -81,7 +81,12 @@ async function createInstance (siloId: string, templateId: string, userVariables
 
     const gco = await templateService.default.gitCheckoutObjectFromTemplate(instanceTemplate)
 
-    const instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
+    const instTestRegex = /^instance-[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    if (instanceId && !instTestRegex.test(instanceId)) {
+        throw new Error('Cannot create instance due to improper id')
+    }
+
+    if (!instanceId) instanceId = constants.INSTANCE_PREFIX + utils.uuidv4()
     
     const instSourcePaths = await utils.gitCheckout(gco)
     const templatePointer = await utils.shellExec('sh', ['-c', `git -C ${instSourcePaths.checkoutPath} log --pretty=tformat:"%H" -1`])
