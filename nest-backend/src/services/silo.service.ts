@@ -8,6 +8,7 @@ import { ProviderType } from '../model/Template'
 import { AccountService } from './account.service'
 import { TemplateService } from './template.service'
 import { SecretService } from './secret.service'
+import { KeyValueInput } from 'src/graphql'
 
 @Injectable()
 export class SiloService {
@@ -66,7 +67,7 @@ export class SiloService {
         return queryRes.rows.map((r: any) => this.transformDbRowToSilo(r))
     }
     
-    async createSilo (templateId: string, userVariables: Property[]) : Promise<Silo | null> {
+    async createSilo (templateId: string, userVariables: KeyValueInput[]) : Promise<Silo | null> {
         const siloId = constants.SILO_PREFIX + utils.uuidv4()
         const template = await this.templateService.getTemplate(templateId)
         const gco = await this.templateService.gitCheckoutObjectFromTemplate(template)
@@ -116,7 +117,7 @@ export class SiloService {
         await this.updateSiloDbRecord(silo)
     }
     
-    async createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: Property[]) {
+    async createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: KeyValueInput[]) {
         const startTime = (new Date()).getTime()
         const siloTfVarsObj: any = {
             silo_identifier: siloId
@@ -133,18 +134,13 @@ export class SiloService {
         await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
         const initSiloData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${siloId}/${fname}`])
         const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : Property) => {
-            if (uv.sensitivity !== "sensitive") {
-                return uv
-            } else {
-                const secretId = await this.secretService.createSecret(uv.value)
-                const sensitiveProp: Property = {
-                    key: uv.key,
-                    value: secretId,
-                    sensitivity: "sensitive"
-                }
-                return sensitiveProp
+        const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : KeyValueInput) => {
+            const prop: Property = {
+                key: uv.key,
+                value: uv.value,
+                sensitivity: "nonsensitive"
             }
+            return prop
         }))
         Object.keys(parsedSiloOut).forEach((key: string) => {
             const sp : Property = {
