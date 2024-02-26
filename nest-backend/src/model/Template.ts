@@ -42,16 +42,6 @@ class Template {
     recordData : TemplateData = new TemplateData()
 }
 
-class TemplateInput {
-    type: TemplateType = TemplateType.UNDEFINED
-    repoUrl: string = ''
-    repoPath: string = ''
-    repoPointer: string = ''
-    providers: ProviderType[] = []
-    authAccounts: string[] = ['']
-    parentTemplates: string[] = ['']
-}
-
 class TfVarDefinition {
     key: string = ''
     type: TfVariableType = TfVariableType.STRING
@@ -60,4 +50,4 @@ class TfVarDefinition {
     value: string | null = null // default value
 }
 
-export { Template, TemplateInput, TemplateType, TfVarDefinition, ProviderType, TemplateData }
+export { Template, TemplateType, TfVarDefinition, ProviderType, TemplateData }

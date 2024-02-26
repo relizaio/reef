@@ -10,22 +10,22 @@ export class AccountResolver {
 
     @Query()
     async getAllActiveAccounts() {
-        return this.accountService.getAllActiveAccounts();
+        return await this.accountService.getAllActiveAccounts();
     }
 
     @Mutation()
     async createAwsAccount(@Args('awsAccount') awsAccount: AwsAccountInput) {
-        return this.accountService.createAwsAccount(awsAccount)
+        return await this.accountService.createAwsAccount(awsAccount)
     }
 
     @Mutation()
     async createAzureAccount(@Args('azureAccount') azureAccount: AzureAccountInput) {
-        return this.accountService.createAzureAccount(azureAccount)
+        return await this.accountService.createAzureAccount(azureAccount)
     }
 
     @Mutation()
     async createGitAccount(@Args('gitAccount') gitAccount: GitAccountInput) {
-        return this.accountService.createGitAccount(gitAccount)
+        return await this.accountService.createGitAccount(gitAccount)
     }
 //   @ResolveField()
 //   async posts(@Parent() author) {
