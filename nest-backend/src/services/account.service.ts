@@ -1,5 +1,4 @@
-
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
 import { AwsAccountInput, AzureAccountInput, GitAccountInput } from 'src/graphql'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'

@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
-import { TemplateService } from 'src/accounts/template.service';
+import { TemplateService } from 'src/services/template.service';
 import { TemplateInput } from 'src/graphql';
 
 @Resolver('Template')

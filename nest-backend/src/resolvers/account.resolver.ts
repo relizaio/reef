@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
-import { AccountService } from 'src/accounts/account.service'
+import { AccountService } from 'src/services/account.service'
 import { AwsAccountInput, AzureAccountInput, GitAccountInput } from 'src/graphql'
 
 @Resolver('Account')
