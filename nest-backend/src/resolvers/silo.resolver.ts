@@ -3,7 +3,7 @@ import { KeyValueInput } from 'src/graphql';
 import { SiloService } from 'src/services/silo.service';
 
 @Resolver('Silo')
-export class InstanceResolver {
+export class SiloResolver {
     constructor(
             private siloService: SiloService
     ) {}

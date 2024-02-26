@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
+import { KeyValueInput } from 'src/graphql';
 import { InstanceService } from 'src/services/instance.service';
 
 @Resolver('Instance')
@@ -7,13 +8,29 @@ export class InstanceResolver {
             private instanceService: InstanceService
     ) {}
 
-    // @Query()
-    // async getAllActiveAccounts() {
-    //     return await this.accountService.getAllActiveAccounts();
-    // }
+    @Query()
+    async getInstance(@Args('instanceId') instanceId: string) {
+        return await this.instanceService.getInstance(instanceId)
+    }
 
-    // @Mutation()
-    // async createAwsAccount(@Args('awsAccount') awsAccount: AwsAccountInput) {
-    //     return await this.accountService.createAwsAccount(awsAccount)
-    // }
+    @Query()
+    async getAllActiveInstances() {
+        return await this.instanceService.getAllActiveInstances()
+    }
+
+    @Query()
+    async getInstancesOfSilo(@Args('siloId') siloId: string) {
+        return await this.instanceService.getInstancesOfSilo(siloId)
+    }
+
+    @Mutation()
+    async createInstance(@Args('siloId') siloId: string, @Args('templateId') templateId: string, @Args('instanceId') instanceId?: string, @Args('userVariables') userVariables?: KeyValueInput[]) {
+        return await this.instanceService.createInstance(siloId, templateId, instanceId, userVariables)
+    }
+
+    @Mutation()
+    async destroyInstance(@Args('instanceId') instanceId?: string) {
+        await this.instanceService.destroyInstance(instanceId)
+        return true
+    }
 }

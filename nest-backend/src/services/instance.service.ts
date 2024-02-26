@@ -8,6 +8,7 @@ import { ProviderType } from '../model/Template'
 import { AccountService } from './account.service'
 import { TemplateService } from './template.service'
 import { SiloService } from './silo.service'
+import { KeyValueInput } from 'src/graphql'
 
 @Injectable()
 export class InstanceService {
@@ -78,7 +79,7 @@ export class InstanceService {
         return queryRes.rows[0]
     }
     
-    async createInstance (siloId: string, templateId: string, instanceId?: string, userVariables?: Property[]) : Promise<Instance | null> {
+    async createInstance (siloId: string, templateId: string, instanceId?: string, userVariables?: KeyValueInput[]) : Promise<Instance | null> {
         const siloEntity = await this.siloService.getSilo(siloId)
     
         const instanceTemplate = await this.templateService.getTemplate(templateId)
