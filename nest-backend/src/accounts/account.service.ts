@@ -1,6 +1,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
+import { AwsAccountInput, AzureAccountInput, GitAccountInput } from 'src/graphql'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
@@ -43,8 +44,8 @@ export class AccountService {
         return queryRes.rows[0]
     }
     
-    async createGitAccount (ga: GitAccount) : Promise<AccountDao> {
-        const gaDao : GitAccountDao = await this.gitAccountDaoFromGitAccount(ga)
+    async createGitAccount (ga: GitAccountInput) : Promise<AccountDao> {
+        const gaDao : GitAccountDao = await this.gitAccountDaoFromGitAccountInput(ga)
         const adao : AccountDao = new AccountDao()
         adao.id = utils.uuidv4()
         adao.status = constants.STATUS_ACTIVE
@@ -53,8 +54,8 @@ export class AccountService {
         return adao
     }
     
-    async createAwsAccount (aa: AwsAccount) : Promise<AccountDao> {
-        const aaDao : AwsAccountDao = await this.awsAccountDaoFromAwsAccount(aa)
+    async createAwsAccount (aa: AwsAccountInput) : Promise<AccountDao> {
+        const aaDao : AwsAccountDao = await this.awsAccountDaoFromAwsAccountInput(aa)
         const adao : AccountDao = new AccountDao()
         adao.id = utils.uuidv4()
         adao.status = constants.STATUS_ACTIVE
@@ -63,8 +64,8 @@ export class AccountService {
         return adao
     }
     
-    async createAzureAccount (aa: AzureAccount) : Promise<AccountDao> {
-        const aaDao : AzureAccountDao = await this.azureAccountDaoFromAzureAccount(aa)
+    async createAzureAccount (aa: AzureAccountInput) : Promise<AccountDao> {
+        const aaDao : AzureAccountDao = await this.azureAccountDaoFromAzureAccountInput(aa)
         const adao : AccountDao = new AccountDao()
         adao.id = utils.uuidv4()
         adao.status = constants.STATUS_ACTIVE
@@ -73,7 +74,7 @@ export class AccountService {
         return adao
     }
     
-    async gitAccountDaoFromGitAccount (ga: GitAccount) : Promise<GitAccountDao> {
+    async gitAccountDaoFromGitAccountInput (ga: GitAccountInput) : Promise<GitAccountDao> {
         const gaDao = new GitAccountDao()
         gaDao.repositoryVendor = ga.repositoryVendor
         gaDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
@@ -81,7 +82,7 @@ export class AccountService {
         return gaDao
     }
     
-    async awsAccountDaoFromAwsAccount (aa: AwsAccount) : Promise<AwsAccountDao> {
+    async awsAccountDaoFromAwsAccountInput (aa: AwsAccountInput) : Promise<AwsAccountDao> {
         const aaDao = new AwsAccountDao()
         aaDao.region = aa.region
         aaDao.accessKey = cipherDaoFromObject(await crypto.encrypt(aa.accessKey))
@@ -89,7 +90,7 @@ export class AccountService {
         return aaDao
     }
     
-    async azureAccountDaoFromAzureAccount (aa: AzureAccount) : Promise<AzureAccountDao> {
+    async azureAccountDaoFromAzureAccountInput (aa: AzureAccountInput) : Promise<AzureAccountDao> {
         const aaDao = new AzureAccountDao()
         aaDao.resourceGroupName = aa.resourceGroupName
         aaDao.clientId = cipherDaoFromObject(await crypto.encrypt(aa.clientId))

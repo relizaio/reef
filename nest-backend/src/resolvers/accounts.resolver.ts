@@ -1,5 +1,6 @@
-import { Resolver, Query } from '@nestjs/graphql'
-import { AccountService } from 'src/accounts/account.service';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
+import { AccountService } from 'src/accounts/account.service'
+import { AwsAccountInput, AzureAccountInput, GitAccountInput } from 'src/graphql'
 
 @Resolver('Account')
 export class AccountResolver {
@@ -12,6 +13,20 @@ export class AccountResolver {
         return this.accountService.getAllActiveAccounts();
     }
 
+    @Mutation()
+    async createAwsAccount(@Args('awsAccount') awsAccount: AwsAccountInput) {
+        return this.accountService.createAwsAccount(awsAccount)
+    }
+
+    @Mutation()
+    async createAzureAccount(@Args('azureAccount') azureAccount: AzureAccountInput) {
+        return this.accountService.createAzureAccount(azureAccount)
+    }
+
+    @Mutation()
+    async createGitAccount(@Args('gitAccount') gitAccount: GitAccountInput) {
+        return this.accountService.createGitAccount(gitAccount)
+    }
 //   @ResolveField()
 //   async posts(@Parent() author) {
 //     const { id } = author;
