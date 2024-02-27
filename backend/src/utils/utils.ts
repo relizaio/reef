@@ -1,7 +1,7 @@
 import * as fsp from 'node:fs/promises'
 import * as fs from 'node:fs'
-import path from 'path'
-import childProcess from 'child_process'
+const { join } = require('node:path')
+const { spawn } = require('node:child_process')
 import constants from './constants'
 import { TfVarDefinition } from '../model/Template'
 import { GitCheckoutObject } from '../model/GitCheckoutObject'
@@ -27,8 +27,8 @@ async function copyDir(src: string, dest: string) {
     let entries = await fsp.readdir(src, { withFileTypes: true })
 
     for (let entry of entries) {
-        let srcPath = path.join(src, entry.name);
-        let destPath = path.join(dest, entry.name);
+        let srcPath = join(src, entry.name);
+        let destPath = join(dest, entry.name);
 
         entry.isDirectory() ?
             await copyDir(srcPath, destPath) :
@@ -59,7 +59,7 @@ function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> 
     return new Promise((resolve, reject) => {
         let options: any = {}
         if (timeout) options.timeout = timeout
-        const child = childProcess.spawn(cmd, args, options)
+        const child = spawn(cmd, args, options)
         let resData = ""
         child.stdout.on('data', (data)=> {
             resData += data
@@ -69,7 +69,7 @@ function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> 
             console.error(`shell command error: ${data}`)
         })
   
-        child.on('close', (code) => {
+        child.on('exit', (code) => {
             if (code !== 0) console.log(`shell process exited with code ${code}`)
             if (code === 0) {
                 if (resData) {

@@ -14,13 +14,15 @@ export function getPool() {
     return pool
 }
 
-export async function testConnection () {
+export async function testConnection (): Promise<Boolean> {
     const query = "select 1"
     try {
         await runQuery(query, [])
+        return true
     } catch (error : any) {
         console.error('Error connecting to PostgreSQL')
         console.error(error)
+        return false
     }
 }
 
