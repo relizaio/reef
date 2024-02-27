@@ -11,6 +11,8 @@ services:
      - "4002:4001"
     volumes:
       - "tfspace-data:/app/tf_space"
+    dns:
+      - 8.8.8.8
   ref-ui:
     build: ../../ui
     ports:
