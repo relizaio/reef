@@ -15,26 +15,21 @@ ARG CI_ENV=noci
 ARG GIT_COMMIT=git_commit_undefined
 ARG GIT_BRANCH=git_branch_undefined
 ARG VERSION=not_versioned
-RUN apk add openssh git
 COPY --from=builder /tmp/tofu /usr/local/bin/
-RUN mkdir /app
-RUN echo "version=$VERSION" > /app/version && echo "commit=$GIT_COMMIT" >> /app/version && echo "branch=$GIT_BRANCH" >> /app/version
+RUN apk add openssh git && mkdir /app && echo "version=$VERSION" > /app/version && echo "commit=$GIT_COMMIT" >> /app/version && echo "branch=$GIT_BRANCH" >> /app/version
 WORKDIR /app
 RUN addgroup -S apprunner && adduser -S apprunner -G apprunner && chown apprunner:apprunner -R /app
 COPY --chown=apprunner:apprunner package*.json ./
 COPY --from=builder --chown=apprunner:apprunner /app/dist ./
 COPY --chown=apprunner:apprunner src/schema.graphql /app/src/
 USER apprunner
-RUN mkdir tf_space && npm install --omit=dev
+RUN mkdir tf_space && npm install --omit=dev && git config --global init.defaultBranch main
 
 LABEL git_commit $GIT_COMMIT
 LABEL git_branch $GIT_BRANCH
 LABEL ci_environment $CI_ENV
 LABEL version $VERSION
 
-
-
-
-EXPOSE 3051
+EXPOSE 4001
 
 CMD ["node", "/app/src/main.js"]
