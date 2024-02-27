@@ -7,21 +7,21 @@ const gqlClient = new ApolloClient({
 
 const testVars = {
     "awsAccount": {
-        "accessKey": process.env.REF_TEST_AWS_ACCESS_KEY,
-        "secretKey": process.env.REF_TEST_AWS_SECRET_KEY,
-        "region": process.env.REF_TEST_AWS_REGION
+        "accessKey": process.env.REEF_TEST_AWS_ACCESS_KEY,
+        "secretKey": process.env.REEF_TEST_AWS_SECRET_KEY,
+        "region": process.env.REEF_TEST_AWS_REGION
     },
     "azureAccount": {
-        "clientId": process.env.REF_TEST_AZURE_CLIENTID,
-        "clientSecret": process.env.REF_TEST_AZURE_CLIENTSECRET,
-        "resourceGroupName": process.env.REF_TEST_AZURE_RESOURCEGROUPNAME,
-        "subscriptionId": process.env.REF_TEST_AZURE_SUBSCRIPTIONID,
-        "tenantId": process.env.REF_TEST_AZURE_TENANTID
+        "clientId": process.env.REEF_TEST_AZURE_CLIENTID,
+        "clientSecret": process.env.REEF_TEST_AZURE_CLIENTSECRET,
+        "resourceGroupName": process.env.REEF_TEST_AZURE_RESOURCEGROUPNAME,
+        "subscriptionId": process.env.REEF_TEST_AZURE_SUBSCRIPTIONID,
+        "tenantId": process.env.REEF_TEST_AZURE_TENANTID
     },
     "gitAccount": {
-        "token": process.env.REF_TEST_GIT_TOKEN,
-        "username": process.env.REF_TEST_GIT_USERNAME,
-        "repositoryVendor": process.env.REF_TEST_GIT_VENDOR
+        "token": process.env.REEF_TEST_GIT_TOKEN,
+        "username": process.env.REEF_TEST_GIT_USERNAME,
+        "repositoryVendor": process.env.REEF_TEST_GIT_VENDOR
     }
 }
 

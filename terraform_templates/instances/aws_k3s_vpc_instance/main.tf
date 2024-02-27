@@ -10,7 +10,7 @@ resource "aws_key_pair" "aws_sshkey" {
   public_key = tls_private_key.sshkey.public_key_openssh
 }
 
-resource "aws_network_interface" "ref_network_interface" {
+resource "aws_network_interface" "reef_network_interface" {
   subnet_id   = "${var.subnet_id}"
   private_ips_count = 0
   security_groups = ["${var.security_group_id}"]
@@ -39,13 +39,13 @@ resource "local_sensitive_file" "ssh_key_file" {
   content = tls_private_key.sshkey.private_key_pem
 }
 
-resource "aws_instance" "ref_node_1" {
+resource "aws_instance" "reef_node_1" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
   key_name = aws_key_pair.aws_sshkey.key_name
   
   network_interface {
-    network_interface_id = aws_network_interface.ref_network_interface.id
+    network_interface_id = aws_network_interface.reef_network_interface.id
     device_index         = 0
   }
   
@@ -60,9 +60,9 @@ resource "aws_route53_record" "www" {
   name    = var.instance_id
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.ref_node_1.public_ip]
+  records = [aws_instance.reef_node_1.public_ip]
 }
 
 output "instance_ip" {
-  value = aws_instance.ref_node_1.public_ip
+  value = aws_instance.reef_node_1.public_ip
 }

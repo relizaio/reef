@@ -8,7 +8,7 @@ const pool = new pg.Pool({
     port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT) : 5439,
 })
 
-const schema = process.env.POSTGRES_SCHEMA ? process.env.POSTGRES_SCHEMA : `ref`
+const schema = process.env.POSTGRES_SCHEMA ? process.env.POSTGRES_SCHEMA : `reef`
 
 export function getPool() {
     return pool

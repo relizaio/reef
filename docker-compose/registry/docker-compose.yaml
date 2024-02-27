@@ -1,23 +1,23 @@
 version: '3.8'
 services:
 services:
-  ref-backend:
-    image: registry.relizahub.com/library/ref-backend
+  reef-backend:
+    image: registry.relizahub.com/library/reef-backend
     environment:
-     - POSTGRES_HOST=ref-postgresql
+     - POSTGRES_HOST=reef-postgresql
      - POSTGRES_PORT=5432
     depends_on:
-     - ref-postgresql
+     - reef-postgresql
     ports:
      - "4002:4001"
     volumes:
       - "tfspace-data-registry:/app/tf_space"
-  ref-ui:
-    image: registry.relizahub.com/library/ref-ui
+  reef-ui:
+    image: registry.relizahub.com/library/reef-ui
     ports:
      - "8112:80"
     environment:
-     - BACKEND_HOST=ref-backend
+     - BACKEND_HOST=reef-backend
      - BACKEND_PORT=4001
     deploy:
       replicas: 1
@@ -27,24 +27,24 @@ services:
         parallelism: 1
         delay: 10s
     depends_on:
-     - rebom-backend
-  ref-postgres-init:
+     - reef-backend
+  reef-postgres-init:
     image: 'flyway/flyway:9-alpine'
     restart: on-failure
     depends_on:
-      - ref-postgresql
+      - reef-postgresql
     command:
       [
-        '-url=jdbc:postgresql://ref-postgresql:5432/postgres',
+        '-url=jdbc:postgresql://reef-postgresql:5432/postgres',
         '-user=postgres',
         '-password=password',
-        '-defaultSchema=ref',
-        '-schemas=ref',
+        '-defaultSchema=reef',
+        '-schemas=reef',
         'migrate'
       ]
     volumes:
       - ../../backend/migrations:/flyway/sql
-  ref-postgresql:
+  reef-postgresql:
     image: postgres:16
     environment:
      - POSTGRES_PASSWORD=password
