@@ -82,7 +82,7 @@ docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgre
 
 ```
 cd backend
-node --loader tsx --test tests/test2.ts
+node --import tsx --test tests/test2.ts
 ```
 
 ### Run cucumber tests:
