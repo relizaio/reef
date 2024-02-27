@@ -69,7 +69,7 @@ function shellExec(cmd: string, args: any[], timeout?: number): Promise<string> 
             console.error(`shell command error: ${data}`)
         })
   
-        child.on('close', (code) => {
+        child.on('exit', (code) => {
             if (code !== 0) console.log(`shell process exited with code ${code}`)
             if (code === 0) {
                 if (resData) {

@@ -118,48 +118,52 @@ export class SiloService {
     }
     
     async createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: KeyValueInput[]) {
-        const startTime = (new Date()).getTime()
-        const siloTfVarsObj: any = {
-            silo_identifier: siloId
-        }
-        userVariables.forEach(prop => {
-            if (prop.value) siloTfVarsObj[prop.key] = prop.value
-        })
-        const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
-        utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
-        console.log(`Creating Silo ${siloId}...`)
-        const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
-        const initializeSiloCmd = envVarCmd +
-            `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(fname)
-        await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
-        const initSiloData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${siloId}/${fname}`])
-        const parsedSiloOut = utils.parseTfOutput(initSiloData)
-        const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : KeyValueInput) => {
-            const prop: Property = {
-                key: uv.key,
-                value: uv.value,
-                sensitivity: "nonsensitive"
+        try {
+            const startTime = (new Date()).getTime()
+            const siloTfVarsObj: any = {
+                silo_identifier: siloId
             }
-            return prop
-        }))
-        Object.keys(parsedSiloOut).forEach((key: string) => {
-            const sp : Property = {
-                key,
-                value: parsedSiloOut[key]
+            userVariables.forEach(prop => {
+                if (prop.value) siloTfVarsObj[prop.key] = prop.value
+            })
+            const siloTfVarsFile = `./${constants.TF_SPACE}/${siloId}/${constants.TF_DEFAULT_TFVARS_FILE}`
+            utils.saveJsonToFile(siloTfVarsFile, siloTfVarsObj)
+            console.log(`Creating Silo ${siloId}...`)
+            const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
+            const initializeSiloCmd = envVarCmd +
+                `cd ${constants.TF_SPACE}/${siloId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(fname)
+            await utils.shellExec('sh', ['-c', initializeSiloCmd], 15*60*1000)
+            const initSiloData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${siloId}/${fname}`])
+            const parsedSiloOut = utils.parseTfOutput(initSiloData)
+            const outSiloProps : Property[] = await Promise.all(userVariables.map(async (uv : KeyValueInput) => {
+                const prop: Property = {
+                    key: uv.key,
+                    value: uv.value,
+                    sensitivity: "nonsensitive"
+                }
+                return prop
+            }))
+            Object.keys(parsedSiloOut).forEach((key: string) => {
+                const sp : Property = {
+                    key,
+                    value: parsedSiloOut[key]
+                }
+                outSiloProps.push(sp)
+            })
+            const outSilo : Silo = {
+                id: siloId,
+                status: constants.STATUS_ACTIVE,
+                template_id: templateId,
+                template_pointer: templatePointer,
+                properties: outSiloProps,
+                instance_templates: []
             }
-            outSiloProps.push(sp)
-        })
-        const outSilo : Silo = {
-            id: siloId,
-            status: constants.STATUS_ACTIVE,
-            template_id: templateId,
-            template_pointer: templatePointer,
-            properties: outSiloProps,
-            instance_templates: []
+            await this.updateSiloDbRecord(outSilo)
+            const allDoneTime = (new Date()).getTime()
+            console.log("After TF silo create time = " + (allDoneTime - startTime))
+        } catch (err: any) {
+            console.log(`create silo on tf failed with error - ${err}`)
         }
-        await this.updateSiloDbRecord(outSilo)
-        const allDoneTime = (new Date()).getTime()
-        console.log("After TF silo create time = " + (allDoneTime - startTime))
     }
     
     async destroySilo (siloId: string) {

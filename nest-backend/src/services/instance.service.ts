@@ -154,33 +154,37 @@ export class InstanceService {
     }
     
     async createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string, templatePointer: string) {
-        const startTime = (new Date()).getTime()
-        const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
-        const initializeInstanceCmd = envVarCmd +
-            `cd ${constants.TF_SPACE}/${instanceId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(fname)
-        await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
-        const initInstanceData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${instanceId}/${fname}`])
-        const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
-        console.log(parsedInstanceOut)
-        const outInstanceProps : Property[] = []
-        Object.keys(parsedInstanceOut).forEach((key: string) => {
-            const sp : Property = {
-                key,
-                value: parsedInstanceOut[key]
+        try {
+            const startTime = (new Date()).getTime()
+            const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
+            const initializeInstanceCmd = envVarCmd +
+                `cd ${constants.TF_SPACE}/${instanceId} && tofu init && tofu apply -auto-approve` + utils.constructTfPipeOut(fname)
+            await utils.shellExec('sh', ['-c', initializeInstanceCmd], 15*60*1000)
+            const initInstanceData = await utils.shellExec('sh', ['-c', `cat ${constants.TF_SPACE}/${instanceId}/${fname}`])
+            const parsedInstanceOut = utils.parseTfOutput(initInstanceData)
+            console.log(parsedInstanceOut)
+            const outInstanceProps : Property[] = []
+            Object.keys(parsedInstanceOut).forEach((key: string) => {
+                const sp : Property = {
+                    key,
+                    value: parsedInstanceOut[key]
+                }
+                outInstanceProps.push(sp)
+            })
+            const outInstance : Instance = {
+                id: instanceId,
+                status: constants.STATUS_ACTIVE,
+                silo_id: siloId,
+                template_id: templateId,
+                template_pointer: templatePointer,
+                properties: outInstanceProps
             }
-            outInstanceProps.push(sp)
-        })
-        const outInstance : Instance = {
-            id: instanceId,
-            status: constants.STATUS_ACTIVE,
-            silo_id: siloId,
-            template_id: templateId,
-            template_pointer: templatePointer,
-            properties: outInstanceProps
+            this.updateInstanceInDb(outInstance)
+            const allDoneTime = (new Date()).getTime()
+            console.log("After TF instance create time = " + (allDoneTime - startTime))
+        } catch (err: any) {
+            console.log(`instance create failed on tf with error - ${err}`)
         }
-        this.updateInstanceInDb(outInstance)
-        const allDoneTime = (new Date()).getTime()
-        console.log("After TF instance create time = " + (allDoneTime - startTime))
     }
     
     async destroyInstance (instanceId: string) {
