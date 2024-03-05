@@ -45,6 +45,10 @@ export class AccountService {
     
     async createGitAccount (ga: GitAccountInput) : Promise<AccountDao> {
         const gaDao : GitAccountDao = await this.gitAccountDaoFromGitAccountInput(ga)
+        return await this.createGitAccountFromDao(gaDao)
+    }
+
+    async createGitAccountFromDao(gaDao: GitAccountDao) : Promise<AccountDao> {
         const adao : AccountDao = new AccountDao()
         adao.id = utils.uuidv4()
         adao.status = constants.STATUS_ACTIVE
