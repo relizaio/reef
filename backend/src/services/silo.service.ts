@@ -42,6 +42,7 @@ export class SiloService {
     }
     
     transformDbRowToSilo(dbRow: any): Silo {
+        console.log(dbRow)
         const silo : Silo = {
             id: constants.SILO_PREFIX + dbRow.uuid,
             status: dbRow.status,

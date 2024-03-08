@@ -1,11 +1,13 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
+import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql'
 import { KeyValueInput } from 'src/graphql';
 import { SiloService } from 'src/services/silo.service';
+import { TemplateService } from 'src/services/template.service';
 
 @Resolver('Silo')
 export class SiloResolver {
     constructor(
-            private siloService: SiloService
+            private siloService: SiloService,
+            private templateService: TemplateService
     ) {}
 
     @Query()
@@ -32,5 +34,10 @@ export class SiloResolver {
     async destroySilo(@Args('siloId') siloId: string) {
         await this.siloService.destroySilo(siloId)
         return true
+    }
+
+    @ResolveField()
+    async template(@Parent() silo) {
+      return this.templateService.getTemplate(silo.template_id)
     }
 }
