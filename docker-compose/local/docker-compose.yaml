@@ -28,7 +28,7 @@ services:
         parallelism: 1
         delay: 10s
     depends_on:
-     - rebom-backend
+     - reef-backend
   reef-postgres-init:
     image: 'flyway/flyway:9-alpine'
     restart: on-failure
