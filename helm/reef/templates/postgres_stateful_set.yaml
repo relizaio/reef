@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "reef.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: reef
+      name: postgres
+      {{- include "reef.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.postgresql.replicaCount }}
+  serviceName: {{ .Release.Name }}-postgres
+  template:
+    metadata:
+      labels:
+        name: postgres
+        app: reef
+        {{- include "reef.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: postgres-container
+          image: {{ .Values.postgresql.image }}
+          env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-pgpassword
+                key: password
+          ports:
+          - containerPort: 5432
+          volumeMounts:
+          - mountPath: "/var/lib/postgresql/data"
+            name: postgres-data
+            subPath: postgres
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.storage }}

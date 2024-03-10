@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: reef-backend
+    app: reef
+    {{- include "reef.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: reef
+      name: reef-backend
+      {{- include "reef.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        name: reef-backend
+        app: reef
+        {{- include "reef.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: reef-backend-container
+        image: {{ .Values.backend.image }}
+        env:
+        - name: POSTGRES_HOST
+          value: {{ .Release.Name }}-postgres
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-pgpassword
+              key: password
+        ports:
+        - containerPort: 4001
+      initContainers:
+      - name: reef-backend-init
+        image: {{ .Values.backend.image }}
+        command: ["cp", "-r", "/app/migrations/.", "/flyway/sql"]
+        volumeMounts:
+        - mountPath: /flyway/sql
+          name: migrations-sql
+      - name: reef-backend-migrations
+        image: {{ .Values.flyway.image }}
+        env:
+        - name: POSTGRES_JDBC
+          value: jdbc:postgresql://{{ .Release.Name }}-postgres:5432/postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-pgpassword
+              key: password
+        command: ['/bin/sh', '-c', "/flyway/flyway -url=$POSTGRES_JDBC -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -defaultSchema=reef -schemas=reef migrate"]
+        volumeMounts:
+          - mountPath: "/flyway/sql"
+            name: migrations-sql
+      volumes:
+        - name: migrations-sql
+          emptyDir: {}

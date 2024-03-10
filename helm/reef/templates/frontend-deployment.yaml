@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    name: reef-frontend
+    app: reef
+    {{- include "reef.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: reef
+      name: reef-frontend
+      {{- include "reef.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        name: reef-frontend
+        app: reef
+        {{- include "reef.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if ne .Values.frontend.regcred "none" }}
+      imagePullSecrets:
+        - name: {{ .Values.frontend.regcred }}
+      {{- end }}
+      containers:
+      - name: reef-frontend
+        image: {{ .Values.frontend.image }}
+        env:
+        - name: BACKEND_HOST
+          value: {{ .Release.Name }}-backend-service
+        - name: BACKEND_PORT
+          value: "4001"
+        ports:
+        - containerPort: 80

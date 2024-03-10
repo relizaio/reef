@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: reef
+    {{- include "reef.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: reef
+    name: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

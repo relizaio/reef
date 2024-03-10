@@ -1,0 +1,17 @@
+backend:
+  image: registry.relizahub.com/library/reef-backend
+  replicaCount: 1
+frontend:
+  image: registry.relizahub.com/library/reef-ui
+  replicaCount: 1
+  regcred: none
+postgresql:
+  image: postgres:16.2-alpine3.19
+  defaultSecret: true
+  replicaCount: 1
+  storage: 3Gi
+flyway:
+  image: flyway/flyway:10.9.1-alpine
+ingress:
+  traefikEnabled: false
+  minimalIngressEnabled: false

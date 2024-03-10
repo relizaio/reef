@@ -1,0 +1,6 @@
+dependencies:
+- name: ecr-regcred
+  repository: oci://registry.relizahub.com/library
+  version: 0.1.2
+digest: sha256:a87bcc6670fc74b65af83a15fd62897769ed68eb70e2cb3ee523f918b9b90e22
+generated: "2023-06-26T17:46:30.5676761-04:00"
