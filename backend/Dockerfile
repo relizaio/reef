@@ -22,6 +22,7 @@ RUN addgroup -S apprunner && adduser -S apprunner -G apprunner && chown apprunne
 COPY --chown=apprunner:apprunner package*.json ./
 COPY --from=builder --chown=apprunner:apprunner /app/dist ./
 COPY --chown=apprunner:apprunner src/schema.graphql /app/src/
+COPY --chown=apprunner:apprunner migrations /app/migrations
 USER apprunner
 RUN mkdir tf_space && npm install --omit=dev && git config --global init.defaultBranch main
 
