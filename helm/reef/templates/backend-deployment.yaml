@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-backend
+  name: {{ .Release.Name }}-reef-backend
   namespace: {{ .Release.Namespace }}
   labels:
     name: reef-backend
@@ -26,13 +26,13 @@ spec:
         image: {{ .Values.backend.image }}
         env:
         - name: POSTGRES_HOST
-          value: {{ .Release.Name }}-postgres
+          value: {{ .Release.Name }}-reef-postgres
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-pgpassword
+              name: {{ .Release.Name }}-reef-pgpassword
               key: password
         ports:
         - containerPort: 4001
@@ -53,7 +53,7 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Release.Name }}-pgpassword
+              name: {{ .Release.Name }}-reef-pgpassword
               key: password
         command: ['/bin/sh', '-c', "/flyway/flyway -url=$POSTGRES_JDBC -user=$POSTGRES_USER -password=$POSTGRES_PASSWORD -defaultSchema=reef -schemas=reef migrate"]
         volumeMounts:

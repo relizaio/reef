@@ -2,7 +2,7 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: web-ingressroute
+  name: reef-web-ingressroute
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "reef.labels" . | nindent 4 }}
@@ -13,7 +13,7 @@ spec:
   - match: Host(`{{ .Values.ingress.host}}`)
     kind: Rule
     services:
-    - name: {{ .Release.Name }}-frontend-service
+    - name: {{ .Release.Name }}-reef-frontend-service
       port: 80
     middlewares:
       - name: redirect
@@ -21,7 +21,7 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: websecure-ingressroute
+  name: reef-websecure-ingressroute
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "reef.labels" . | nindent 4 }}
@@ -32,7 +32,7 @@ spec:
   - match: Host(`{{ .Values.ingress.host}}`)
     kind: Rule
     services:
-    - name: {{ .Release.Name }}-frontend-service
+    - name: {{ .Release.Name }}-reef-frontend-service
       port: 80
   tls:
     certResolver: le
@@ -40,7 +40,7 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: redirect
+  name: reef-redirect
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "reef.labels" . | nindent 4 }}
