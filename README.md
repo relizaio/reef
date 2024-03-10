@@ -69,13 +69,13 @@ docker run -d --name reliza-ephemeral-postgres -e POSTGRES_PASSWORD=password -p 
 
 ```
 cd backend
-docker run --rm -v ./migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=ref -schemas='ref' migrate
+docker run --rm -v ./migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=reef -schemas='reef' migrate
 ```
 
 ### Flyway for PowerShell:
 ```
 cd backend
-docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=ref -schemas='ref' migrate
+docker run --rm -v ${PWD}/migrations:/flyway/sql flyway/flyway -url=jdbc:postgresql://host.docker.internal:5439/postgres -user=postgres -password=password -defaultSchema=reef -schemas='reef' migrate
 ```
 
 ### Run test sample:
@@ -90,11 +90,11 @@ Create test wrapper, such as following, and run from cucumber directory:
 
 ```
 #!/bin/bash
-export REF_TEST_AZURE_CLIENTID="123"
-export REF_TEST_AZURE_CLIENTSECRET="123"
-export REF_TEST_AZURE_RESOURCEGROUPNAME="123"
-export REF_TEST_AZURE_SUBSCRIPTIONID="123"
-export REF_TEST_AZURE_TENANTID="123"
+export REEF_TEST_AZURE_CLIENTID="123"
+export REEF_TEST_AZURE_CLIENTSECRET="123"
+export REEF_TEST_AZURE_RESOURCEGROUPNAME="123"
+export REEF_TEST_AZURE_SUBSCRIPTIONID="123"
+export REEF_TEST_AZURE_TENANTID="123"
 npm test
 ```
 
@@ -103,10 +103,10 @@ To run a single feature / scenario by tag, use wrapper as following:
 
 ```
 #!/bin/bash
-export REF_TEST_AZURE_CLIENTID="123"
-export REF_TEST_AZURE_CLIENTSECRET="123"
-export REF_TEST_AZURE_RESOURCEGROUPNAME="123"
-export REF_TEST_AZURE_SUBSCRIPTIONID="123"
-export REF_TEST_AZURE_TENANTID="123"
+export REEF_TEST_AZURE_CLIENTID="123"
+export REEF_TEST_AZURE_CLIENTSECRET="123"
+export REEF_TEST_AZURE_RESOURCEGROUPNAME="123"
+export REEF_TEST_AZURE_SUBSCRIPTIONID="123"
+export REEF_TEST_AZURE_TENANTID="123"
 node_modules/@cucumber/cucumber/bin/cucumber-js --tags "@deleteSilo"
 ```
