@@ -63,11 +63,11 @@
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
-import { useStore } from 'vuex'
+import { ref, Ref } from 'vue'
 import { NButton, NDynamicInput, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import Swal from 'sweetalert2'
 import commonFunctions from '@/utils/commonFunctions'
 
 export default {
@@ -77,7 +77,8 @@ export default {
     },
     props: {
     },
-    async setup(/*props : any, { emit } : any*/) {
+    emits: ['templateCreated'],
+    async setup(props : any , { emit } : any) {
 
         const accounts: Ref<any[]> = ref([])
         const parentTemplates: Ref<any[]> = ref([])
@@ -114,19 +115,27 @@ export default {
         ]
 
         async function createTemplate() {
-            const gqlRes = await graphqlClient
-                .mutate({
-                    mutation: gql`
-                        mutation CreateTemplate($templateInput: TemplateInput!) {
-                            createTemplate(templateInput: $templateInput) {
-                                id
-                            }
-                        }`,
-                    variables: {
-                        templateInput: template.value
-                    }
-                })
-            console.log(gqlRes)
+            try {
+                await graphqlClient
+                    .mutate({
+                        mutation: gql`
+                            mutation CreateTemplate($templateInput: TemplateInput!) {
+                                createTemplate(templateInput: $templateInput) {
+                                    id
+                                }
+                            }`,
+                        variables: {
+                            templateInput: template.value
+                        }
+                    })
+                emit('templateCreated')
+            } catch (err: any) {
+                Swal.fire(
+                    'Error!',
+                    commonFunctions.parseGraphQLError(err.message),
+                    'error')
+            }
+            
         }
 
         async function handleTemplateTypeSwitch() {

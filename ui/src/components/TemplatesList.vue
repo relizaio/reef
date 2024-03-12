@@ -15,7 +15,9 @@
             v-model:show="showCreateTemplateModal"
             preset="dialog"
             :show-icon="false">
-            <create-template />
+            <create-template 
+                @templateCreated="showCreateTemplateModal = false"
+                />
         </n-modal>
     </div>
 </template>

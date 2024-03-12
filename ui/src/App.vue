@@ -57,4 +57,8 @@ export default class App extends Vue {
 .swal-wide {
     width: 90% !important;
 }
+
+.swal2-container {
+  z-index: 50000 !important;
+}
 </style>
