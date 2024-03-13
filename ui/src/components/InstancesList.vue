@@ -91,6 +91,7 @@ export default {
                         }
                     }
                 `,
+                fetchPolicy: 'no-cache'
             })
             instances.value = instResponse.data.getAllActiveInstances
         }

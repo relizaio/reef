@@ -24,12 +24,13 @@
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
+import { ref, Ref } from 'vue'
 import { useStore } from 'vuex'
 import { NButton, NDynamicInput, NForm, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
-import commonFunctions from '@/utils/commonFunctions'
+import Swal from 'sweetalert2'
+import commonFunctions from '../utils/commonFunctions'
 
 export default {
     name: 'CreateSilo',
@@ -38,8 +39,8 @@ export default {
     },
     props: {
     },
-    async setup(/*props : any, { emit } : any*/) {
-        const store = useStore()
+    emits: ['siloCreated'],
+    async setup(props : any, { emit } : any) {
 
         const templates: Ref<any[]> = ref([])
         const templatesForSelection: Ref<any[]> = ref([])
@@ -79,7 +80,6 @@ export default {
                         value: t.id
                     }
             })
-            console.log(templates.value)
         }
 
         async function loadTemplateWithVariables (templateId: string) {
@@ -116,17 +116,24 @@ export default {
         }
 
         async function createSilo () {
-            const gqlRes = await graphqlClient
-                .mutate({
-                    mutation: gql`
-                        mutation CreateSilo($templateId: ID!, $userVariables: [KeyValueInput]) {
-                            createSilo(templateId: $templateId, userVariables: $userVariables) {
-                                id
-                            }
-                        }`,
-                    variables: silo.value
-                })
-            console.log(gqlRes)
+            try {
+                await graphqlClient
+                    .mutate({
+                        mutation: gql`
+                            mutation CreateSilo($templateId: ID!, $userVariables: [KeyValueInput]) {
+                                createSilo(templateId: $templateId, userVariables: $userVariables) {
+                                    id
+                                }
+                            }`,
+                        variables: silo.value
+                    })
+                emit('siloCreated')
+            } catch (err: any) {
+                Swal.fire(
+                    'Error!',
+                    commonFunctions.parseGraphQLError(err.message),
+                    'error')
+            }
         }
 
         const onCreate = async function () {

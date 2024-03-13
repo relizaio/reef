@@ -15,7 +15,8 @@
             v-model:show="showCreateSiloModal"
             preset="dialog"
             :show-icon="false">
-            <create-silo />
+            <create-silo 
+                @siloCreated="siloCreated"/>
         </n-modal>
     </div>
 </template>
@@ -91,6 +92,7 @@ export default {
                         }
                     }
                 `,
+                fetchPolicy: 'no-cache'
             })
             silos.value = silosResponse.data.getAllActiveSilos
             console.log(silos.value)
@@ -109,6 +111,12 @@ export default {
                 })
         }
 
+        const siloCreated = async function () {
+            showCreateSiloModal.value = false
+            onCreate()
+            notify('info', 'Created', 'Silo scheduled for creation.')
+        }
+
         const onCreate = async function () {
             loadSilos()
         }
@@ -117,6 +125,7 @@ export default {
 
         return {
             showCreateSiloModal,
+            siloCreated,
             siloFields,
             siloPagination,
             silos

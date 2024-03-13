@@ -78,12 +78,14 @@ export default {
                         }
                     }
                 `,
+                fetchPolicy: 'no-cache'
             })
             accounts.value = acctResponse.data.getAllActiveAccounts
         }
 
         const accountCreated = async function () {
             showCreateAccountModal.value = false
+            onCreate()
             notify('info', 'Created', 'Account created.')
         }
 

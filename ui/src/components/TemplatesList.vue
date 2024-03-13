@@ -120,13 +120,15 @@ export default {
                 `,
                 variables: {
                     status: 'ACTIVE'
-                }
+                },
+                fetchPolicy: 'no-cache'
             })
             templates.value = tmplResponse.data.getTemplates
         }
 
         const templateCreated = async function () {
             showCreateTemplateModal.value = false
+            onCreate()
             notify('info', 'Created', 'Template created.')
         }
 
