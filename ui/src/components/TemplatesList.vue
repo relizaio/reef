@@ -16,14 +16,14 @@
             preset="dialog"
             :show-icon="false">
             <create-template 
-                @templateCreated="showCreateTemplateModal = false"
+                @templateCreated="templateCreated"
                 />
         </n-modal>
     </div>
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
+import { ref, Ref } from 'vue'
 import { useStore } from 'vuex'
 import { NButton, NDataTable, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import gql from 'graphql-tag'
@@ -125,6 +125,11 @@ export default {
             templates.value = tmplResponse.data.getTemplates
         }
 
+        const templateCreated = async function () {
+            showCreateTemplateModal.value = false
+            notify('info', 'Created', 'Template created.')
+        }
+
         const onCreate = async function () {
             loadTemplates()
         }
@@ -133,6 +138,7 @@ export default {
 
         return {
             showCreateTemplateModal,
+            templateCreated,
             templateFields,
             templatePagination,
             templates
