@@ -68,7 +68,7 @@ import { NButton, NDynamicInput, NForm, NFormItem, NInput, NSelect } from 'naive
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
 import Swal from 'sweetalert2'
-import commonFunctions from '@/utils/commonFunctions'
+import commonFunctions from '../utils/commonFunctions'
 
 export default {
     name: 'CreateTemplate',

@@ -62,7 +62,7 @@
                     placeholder="Enter Tenant ID"
                     v-model:value="azureAccount.tenantId" />
             </n-form-item>
-            <n-button @click="createAzureAccount" type="success">Create Azure Account</n-button>
+            <n-button @click="createAccountWrapper(AccountType.Azure)" type="success">Create Azure Account</n-button>
         </n-form>
         <n-form
             v-if="selectedProviderType === 'GIT'"
@@ -82,18 +82,18 @@
                     type="password"
                     v-model:value="gitAccount.token" />
             </n-form-item>
-            <n-button @click="createGitAccount" type="success">Create Git Account</n-button>
+            <n-button @click="createAccountWrapper(AccountType.GitHttps)" type="success">Create Git Account</n-button>
         </n-form>
     </div>
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
-import { useStore } from 'vuex'
+import { ref } from 'vue'
 import { NButton, NInput, NForm, NFormItem, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
-import commonFunctions from '@/utils/commonFunctions'
+import Swal from 'sweetalert2'
+import commonFunctions from '../utils/commonFunctions'
 
 export default {
     name: 'CreateAccount',
@@ -102,7 +102,8 @@ export default {
     },
     props: {
     },
-    async setup(/*props : any, { emit } : any*/) {
+    emits: ['accountCreated'],
+    async setup(props : any, { emit } : any) {
 
         const providerTypes = [
             {
@@ -113,7 +114,7 @@ export default {
                 value: 'AZURE'
             }, 
             {
-                label: 'Git',
+                label: 'Git HTTPS',
                 value: 'GIT'
             }
         ]
@@ -141,8 +142,31 @@ export default {
             repositoryVendor: ''
         })
 
+        async function createAccountWrapper (accountType: AccountType) {
+            try {
+                switch (accountType) {
+                    case AccountType.GitHttps:
+                        await createGitHttpsAccount()
+                        emit('accountCreated')
+                        break
+                    case AccountType.Azure:
+                        await createAzureAccount()
+                        emit('accountCreated')
+                        break
+                    default:
+                        console.log('unknown account')
+                        break
+                }
+            } catch (err: any) {
+                Swal.fire(
+                    'Error!',
+                    commonFunctions.parseGraphQLError(err.message),
+                    'error')
+            }
+        }
+
         async function createAzureAccount () {
-            const gqlRes = await graphqlClient
+            await graphqlClient
                 .mutate({
                     mutation: gql`
                         mutation CreateAzureAccount($azureAccount: AzureAccountInput!) {
@@ -154,11 +178,10 @@ export default {
                         azureAccount: azureAccount.value
                     }
                 })
-            console.log(gqlRes)
         }
 
-        async function createGitAccount () {
-            const gqlRes = await graphqlClient
+        async function createGitHttpsAccount () {
+            await graphqlClient
                 .mutate({
                     mutation: gql`
                         mutation CreateGitAccount($gitAccount: GitAccountInput!) {
@@ -170,12 +193,18 @@ export default {
                         gitAccount: gitAccount.value
                     }
                 })
-            console.log(gqlRes)
+        }
+
+        enum AccountType {
+            GitHttps,
+            GitSsh,
+            AWS,
+            Azure
         }
 
         return {
-            createAzureAccount,
-            createGitAccount,
+            AccountType,
+            createAccountWrapper,
             awsAccount,
             azureAccount,
             gitAccount,
