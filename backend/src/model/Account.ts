@@ -57,6 +57,24 @@ class GitAccountDao extends AccountProvider {
     token: CipherDao = new CipherDao()
 }
 
+class GitSshAccount extends AccountProvider {
+    providerName = constants.GIT_SSH_ACCOUNT_PROVIDER
+
+    repositoryVendor: string = constants.GITHUB_REPOSITORY_VENDOR
+    username: string = ''
+    pubkey: string = ''
+    privkey: string = ''
+}
+
+class GitSshAccountDao extends AccountProvider {
+    providerName = constants.GIT_SSH_ACCOUNT_PROVIDER
+
+    repositoryVendor: string = constants.GITHUB_REPOSITORY_VENDOR
+    username: CipherDao = new CipherDao()
+    pubkey: CipherDao = new CipherDao()
+    privkey: CipherDao = new CipherDao()
+}
+
 class AccountDao {
     id : string = ''
     status: string = constants.STATUS_ACTIVE
@@ -66,6 +84,7 @@ class AccountDao {
 class AccountDto {
     id : string = ''
     providerName: string = ''
+    pubkey: string = ''
 }
 
 export {
@@ -76,5 +95,7 @@ export {
     AzureAccount,
     AzureAccountDao,
     GitAccount,
-    GitAccountDao
+    GitAccountDao,
+    GitSshAccount,
+    GitSshAccountDao
 }

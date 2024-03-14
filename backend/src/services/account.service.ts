@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao } from '../model/Account'
-import { AwsAccountInput, AzureAccountInput, GitAccountInput } from 'src/graphql'
+import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao, GitSshAccountDao } from '../model/Account'
+import { AwsAccountInput, AzureAccountInput, GitAccountInput, GitSshAccountInput } from 'src/graphql'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
@@ -30,7 +30,8 @@ export class AccountService {
     transformDbRowToAccountDto(dbRow: any): AccountDto {
         const account : AccountDto = {
             id: dbRow.uuid,
-            providerName: dbRow.record_data.providerName
+            providerName: dbRow.record_data.providerName,
+            pubkey: ''
         }
         return account
     }
@@ -48,7 +49,31 @@ export class AccountService {
         return await this.createGitAccountFromDao(gaDao)
     }
 
+    async createGitSshAccount (ga: GitSshAccountInput) : Promise<AccountDto> {
+        const keypair = await utils.generateSshKeyPair()
+        const aDao: GitSshAccountDao = new GitSshAccountDao()
+        aDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
+        aDao.privkey = cipherDaoFromObject(await crypto.encrypt(keypair.privkey))
+        aDao.pubkey = cipherDaoFromObject(await crypto.encrypt(keypair.pubkey))
+        const savedDao = await this.createGitSshAccountFromDao(aDao)
+        const aDto: AccountDto = {
+            id: savedDao.id,
+            providerName: aDao.providerName,
+            pubkey: keypair.pubkey
+        }
+        return aDto
+    }
+
     async createGitAccountFromDao(gaDao: GitAccountDao) : Promise<AccountDao> {
+        const adao : AccountDao = new AccountDao()
+        adao.id = utils.uuidv4()
+        adao.status = constants.STATUS_ACTIVE
+        adao.record_data = gaDao
+        await this.saveToDb(adao)
+        return adao
+    }
+
+    async createGitSshAccountFromDao(gaDao: GitSshAccountDao) : Promise<AccountDao> {
         const adao : AccountDao = new AccountDao()
         adao.id = utils.uuidv4()
         adao.status = constants.STATUS_ACTIVE

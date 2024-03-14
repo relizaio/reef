@@ -195,6 +195,21 @@ async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
     return checkoutPaths
 }
 
+async function generateSshKeyPair(): Promise<SshKeyPair> {
+    const workDirId = constants.GIT_SSH_PREFIX + uuidv4()
+    const workDir = `./${constants.TF_SPACE}/${workDirId}`
+    await fsp.mkdir(workDir)
+    await shellExec('sh', ['-c', `cd ${workDir} && ssh-keygen -t ed25519 -f ./id -P "" -C ""`], 60*1000)
+    const pubkey = await shellExec('sh', ['-c', `cat ${workDir}/id.pub`], 10*1000)
+    const privkey = await shellExec('sh', ['-c', `cat ${workDir}/id`], 10*1000)
+    await fsp.rm(workDir, {recursive: true, force: true})
+    const keyPair: SshKeyPair = {
+        privkey,
+        pubkey
+    }
+    return keyPair
+}
+
 function getAzureEnvTfPrefix (azureAct: AzureAccount): string {
     return `export ARM_CLIENT_ID=${azureAct.clientId}; export ARM_CLIENT_SECRET=${azureAct.clientSecret}; ` + 
     `export ARM_SUBSCRIPTION_ID=${azureAct.subscriptionId}; export ARM_TENANT_ID=${azureAct.tenantId}; `
@@ -220,12 +235,18 @@ type GitCheckoutPaths = {
     utilPath: string
 }
 
+type SshKeyPair = {
+    pubkey: string,
+    privkey: string
+}
+
 
 export default {
     constructTfPipeOutFileName,
     constructTfPipeOut,
     copyDir,
     deleteDir,
+    generateSshKeyPair,
     getAwsEnvTfPrefix,
     getAzureEnvTfPrefix,
     gitCheckout,
@@ -237,4 +258,4 @@ export default {
     uuidv4
 }
 
-export type { GitCheckoutPaths }
+export type { GitCheckoutPaths, SshKeyPair }

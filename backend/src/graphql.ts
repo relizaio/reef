@@ -41,6 +41,11 @@ export class GitAccountInput {
     repositoryVendor?: Nullable<string>;
 }
 
+export class GitSshAccountInput {
+    username: string;
+    repositoryVendor?: Nullable<string>;
+}
+
 export class TemplateInput {
     type: TemplateType;
     repoUrl?: Nullable<string>;
@@ -96,6 +101,8 @@ export abstract class IMutation {
     abstract createAzureAccount(azureAccount: AzureAccountInput): Nullable<Account> | Promise<Nullable<Account>>;
 
     abstract createGitAccount(gitAccount: GitAccountInput): Nullable<Account> | Promise<Nullable<Account>>;
+
+    abstract createGitSshAccount(gitAccount: GitSshAccountInput): Nullable<Account> | Promise<Nullable<Account>>;
 }
 
 export class Account {

@@ -20,7 +20,8 @@
         createTemplate(templateInput: TemplateInput!): Template,
         createAwsAccount(awsAccount: AwsAccountInput!): Account,
         createAzureAccount(azureAccount: AzureAccountInput!): Account,
-        createGitAccount(gitAccount: GitAccountInput!): Account
+        createGitAccount(gitAccount: GitAccountInput!): Account,
+        createGitSshAccount(gitAccount: GitSshAccountInput!): Account
     }
     
     enum ProviderType {
@@ -55,6 +56,11 @@
         token: String!
         repositoryVendor: String
     }
+
+    input GitSshAccountInput {
+        username: String!
+        repositoryVendor: String
+    }
     
     input TemplateInput {
         type: TemplateType!
@@ -74,6 +80,7 @@
     type Account {
         id: ID
         providerName: String
+        pubkey: String
     }
     
     type Silo {
