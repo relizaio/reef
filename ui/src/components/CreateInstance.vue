@@ -36,11 +36,12 @@
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
-import { useStore } from 'vuex'
+import { ref, Ref } from 'vue'
 import { NButton, NDynamicInput, NForm, NFormItem, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
+import Swal from 'sweetalert2'
+import commonFunctions from '../utils/commonFunctions'
 
 export default {
     name: 'CreateInstance',
@@ -49,8 +50,8 @@ export default {
     },
     props: {
     },
-    async setup(/*props : any, { emit } : any*/) {
-        const store = useStore()
+    emits: ['instanceCreated'],
+    async setup(props : any, { emit } : any) {
 
         const silos: Ref<any[]> = ref([])
         const silosForSelection: Ref<any[]> = ref([])
@@ -146,16 +147,24 @@ export default {
         }
 
         async function createInstance () {
-            const gqlRes = await graphqlClient
-                .mutate({
-                    mutation: gql`
-                        mutation CreateInstance($siloId: ID!, $templateId: ID!, $userVariables: [KeyValueInput]) {
-                            createInstance(siloId: $siloId, templateId: $templateId, userVariables: $userVariables) {
-                                id
-                            }
-                        }`,
-                    variables: instance.value
-                })
+            try {
+                await graphqlClient
+                    .mutate({
+                        mutation: gql`
+                            mutation CreateInstance($siloId: ID!, $templateId: ID!, $userVariables: [KeyValueInput]) {
+                                createInstance(siloId: $siloId, templateId: $templateId, userVariables: $userVariables) {
+                                    id
+                                }
+                            }`,
+                        variables: instance.value
+                    })
+                emit('instanceCreated')
+            } catch (err: any) {
+                Swal.fire(
+                    'Error!',
+                    commonFunctions.parseGraphQLError(err.message),
+                    'error')
+            }
         }
 
         async function loadSilos () {

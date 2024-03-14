@@ -25,7 +25,6 @@
 
 <script lang="ts">
 import { ref, Ref } from 'vue'
-import { useStore } from 'vuex'
 import { NButton, NDynamicInput, NForm, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'

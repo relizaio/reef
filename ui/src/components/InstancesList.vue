@@ -15,13 +15,14 @@
             v-model:show="showCreateInstanceModal"
             preset="dialog"
             :show-icon="false">
-            <create-instance />
+            <create-instance 
+                @instanceCreated="instanceCreated"/>
         </n-modal>
     </div>
 </template>
 
 <script lang="ts">
-import { ComputedRef, ref, Ref, computed, h, reactive } from 'vue'
+import { ref, Ref, h } from 'vue'
 import { useStore } from 'vuex'
 import { NButton, NDataTable, NIcon, NModal, NPopover, NSelect, DataTableColumns, useNotification, NotificationType } from 'naive-ui'
 import { Trash } from '@vicons/tabler'
@@ -109,6 +110,12 @@ export default {
                 })
         }
 
+        const instanceCreated = async function () {
+            showCreateInstanceModal.value = false
+            onCreate()
+            notify('info', 'Created', 'Instance scheduled for creation.')
+        }
+
 
         const onCreate = async function () {
             loadInstances()
@@ -118,6 +125,7 @@ export default {
 
         return {
             showCreateInstanceModal,
+            instanceCreated,
             instanceFields,
             instancePagination,
             instances
