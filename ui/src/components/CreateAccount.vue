@@ -82,7 +82,19 @@
                     type="password"
                     v-model:value="gitAccount.token" />
             </n-form-item>
-            <n-button @click="createAccountWrapper(AccountType.GitHttps)" type="success">Create Git Account</n-button>
+            <n-button @click="createAccountWrapper(AccountType.GitHttps)" type="success">Create Git HTTPS Account</n-button>
+        </n-form>
+        <n-form
+            v-if="selectedProviderType === 'GITSSH'"
+            :model="gitSshAccount">
+            <n-form-item
+                    path="username"
+                    label="Username">
+                <n-input
+                    placeholder="Enter Username"
+                    v-model:value="gitSshAccount.username" />
+            </n-form-item>
+            <n-button @click="createAccountWrapper(AccountType.GitSsh)" type="success">Create Git SSH Account</n-button>
         </n-form>
     </div>
 </template>
@@ -116,6 +128,10 @@ export default {
             {
                 label: 'Git HTTPS',
                 value: 'GIT'
+            }, 
+            {
+                label: 'Git SSH',
+                value: 'GITSSH'
             }
         ]
         const gitRepositoryVendors = ['GITHUB', 'GITLAB', 'BITBUCKET']
@@ -142,6 +158,10 @@ export default {
             repositoryVendor: ''
         })
 
+        const gitSshAccount = ref({
+            username: ''
+        })
+
         async function createAccountWrapper (accountType: AccountType) {
             try {
                 switch (accountType) {
@@ -151,6 +171,12 @@ export default {
                         break
                     case AccountType.Azure:
                         await createAzureAccount()
+                        emit('accountCreated')
+                        break
+                    case AccountType.GitSsh:
+                        const sshAct = await createGitSshAccount()
+                        console.log(sshAct)
+                        Swal.fire('Account SSH Public Key', sshAct.data.createGitSshAccount.pubkey, 'info')
                         emit('accountCreated')
                         break
                     default:
@@ -195,6 +221,22 @@ export default {
                 })
         }
 
+        async function createGitSshAccount () {
+            return await graphqlClient
+                .mutate({
+                    mutation: gql`
+                        mutation CreateGitSshAccount($gitAccount: GitSshAccountInput!) {
+                            createGitSshAccount(gitAccount: $gitAccount) {
+                                id
+                                pubkey
+                            }
+                        }`,
+                    variables: {
+                        gitAccount: gitSshAccount.value
+                    }
+                })
+        }
+
         enum AccountType {
             GitHttps,
             GitSsh,
@@ -208,6 +250,7 @@ export default {
             awsAccount,
             azureAccount,
             gitAccount,
+            gitSshAccount,
             gitRepositoryVendors,
             providerTypes,
             selectedProviderType
