@@ -29,7 +29,7 @@
                     placeholder="Enter Region"
                     v-model:value="awsAccount.region" />
             </n-form-item>
-            <n-button type="success">Create AWS Account</n-button>
+            <n-button @click="createAccountWrapper(AccountType.AWS)" type="success">Create AWS Account</n-button>
         </n-form>
         <n-form
             v-if="selectedProviderType === 'AZURE'"
@@ -169,6 +169,10 @@ export default {
                         await createGitHttpsAccount()
                         emit('accountCreated')
                         break
+                    case AccountType.AWS:
+                        await createAwsAccount()
+                        emit('accountCreated')
+                        break
                     case AccountType.Azure:
                         await createAzureAccount()
                         emit('accountCreated')
@@ -189,6 +193,21 @@ export default {
                     commonFunctions.parseGraphQLError(err.message),
                     'error')
             }
+        }
+
+        async function createAwsAccount () {
+            await graphqlClient
+                .mutate({
+                    mutation: gql`
+                        mutation CreateAwsAccount($awsAccount: AwsAccountInput!) {
+                            createAwsAccount(awsAccount: $awsAccount) {
+                                id
+                            }
+                        }`,
+                    variables: {
+                        awsAccount: awsAccount.value
+                    }
+                })
         }
 
         async function createAzureAccount () {
