@@ -4,7 +4,7 @@ import { runQuery, schema } from '../utils/pgUtils'
 import utils from '../utils/utils'
 import constants from '../utils/constants'
 import { GitCheckoutObject } from '../model/GitCheckoutObject'
-import { GitAccount } from '../model/Account'
+import { GitAccount, GitSshAccount } from '../model/Account'
 import { AccountService } from './account.service'
 import { TemplateInput } from 'src/graphql'
 
@@ -85,11 +85,16 @@ export class TemplateService {
     async gitCheckoutObjectFromTemplate(template: Template) : Promise<GitCheckoutObject> {
         const gco : GitCheckoutObject = new GitCheckoutObject()
     
-        const ga : GitAccount | null = await this.accountService.getGitAccountFromSet(template.recordData.authAccounts)
+        const ga : GitAccount | GitSshAccount | null = await this.accountService.getGitAccountFromSet(template.recordData.authAccounts)
         if (ga) {
             gco.isPrivate = true
-            gco.token = ga.token
             gco.username = ga.username
+            if (ga instanceof GitAccount) {
+                gco.token = ga.token
+            } else if (ga instanceof GitSshAccount) {
+                gco.privkey = ga.privkey
+            }
+            
         }
     
         gco.gitUri = template.recordData.repoUrl

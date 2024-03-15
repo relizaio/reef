@@ -158,32 +158,32 @@ async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
     await fsp.mkdir(checkoutPath)
     await shellExec('sh', ['-c', `cd ${checkoutPath} && git init`], 15*60*1000)
     let checkoutCmd = ''
+    let gitSshConfig = ''
     if (gco.isPrivate) {
-        let gitUriForCred = ''
-        const uriPartsOne = gco.gitUri.split('//')
-        if (uriPartsOne.length > 1) {
-            const uriPartsTwo = uriPartsOne[1].split('/')
-            gitUriForCred = uriPartsOne[0] + '//' + uriPartsTwo[0]
-        } else {
-            const uriPartsTwo = gco.gitUri.split('/')
-            gitUriForCred = uriPartsTwo[0]
-        }
-        gitUriForCred += '.username'
-        const gitConfigUnameCmd = `cd ${checkoutPath} && git config --local credential.${gitUriForCred} taleodor`
-        await shellExec('sh', ['-c', gitConfigUnameCmd], 30*1000)
-        utilPath = `./${constants.TF_SPACE}/${constants.CRED_PREFIX}${gitCheckoutId}`
+        const relativeUtilPath = `/${constants.TF_SPACE}/${constants.CRED_PREFIX}${gitCheckoutId}`
+        utilPath = '.' + relativeUtilPath
         await fsp.mkdir(utilPath)
-        await shellExec('sh', ['-c', `echo "#!/bin/sh" >> ${utilPath}/askpass.sh`], 30*1000)
-        await shellExec('sh', ['-c', `echo 'exec echo "${gco.token}"' >> ${utilPath}/askpass.sh`], 30*1000)
-        await shellExec('sh', ['-c', `chmod 0700 ${utilPath}/askpass.sh`], 30*1000)
-        const gitConfigTokenCmd = `cd ${checkoutPath} && git config --local core.askpass "../../${utilPath}/askpass.sh"`
-        await shellExec('sh', ['-c', gitConfigTokenCmd], 30*1000)
+        if (gco.token) {
+            const gitUriForCred = normalizeGitUriForCredential(gco.gitUri)
+            const gitConfigUnameCmd = `cd ${checkoutPath} && git config --local credential.${gitUriForCred} ${gco.username}`
+            await shellExec('sh', ['-c', gitConfigUnameCmd], 30*1000)
+            await shellExec('sh', ['-c', `echo "#!/bin/sh" >> ${utilPath}/askpass.sh`], 30*1000)
+            await shellExec('sh', ['-c', `echo 'exec echo "${gco.token}"' >> ${utilPath}/askpass.sh`], 30*1000)
+            await shellExec('sh', ['-c', `chmod 0700 ${utilPath}/askpass.sh`], 30*1000)
+            const gitConfigTokenCmd = `cd ${checkoutPath} && git config --local core.askpass "../../${utilPath}/askpass.sh"`
+            await shellExec('sh', ['-c', gitConfigTokenCmd], 30*1000)
+        } else if (gco.privkey) {
+            await shellExec('sh', ['-c', `echo "${gco.privkey}" >> ${utilPath}/id`], 30*1000)
+            await shellExec('sh', ['-c', `chmod 0600 ${utilPath}/id`], 30*1000)
+            const pwd = await shellExec('sh', ['-c', `pwd`], 30*1000)
+            gitSshConfig = ` && git config --local core.sshCommand 'ssh -i ${pwd}/${utilPath}/id -o StrictHostKeyChecking=no'`
+        }
     }
     if (!gitPath || gitPath === '.' || gitPath === './' || gitPath === '/') {
-        checkoutCmd = `cd ${checkoutPath} && git remote add origin ${gco.gitUri} && git pull --depth=1 origin ${gco.gitPointer}`
+        checkoutCmd = `cd ${checkoutPath} && git remote add origin ${gco.gitUri} ${gitSshConfig} && git pull --depth=1 origin ${gco.gitPointer}`
     } else {
         const cleanedGitPath = gitPath.replace(/^\.\//, '').replace(/^\//, '')
-        checkoutCmd = `cd ${checkoutPath} && git remote add origin ${gco.gitUri} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gco.gitPointer}`
+        checkoutCmd = `cd ${checkoutPath} && git remote add origin ${gco.gitUri} ${gitSshConfig} && git config --local core.sparsecheckout true && echo "${cleanedGitPath}/*" >> .git/info/sparse-checkout && git pull --depth=1 origin ${gco.gitPointer}`
         retPath = checkoutPath + '/' + cleanedGitPath
     }
     const gitCheckoutData = await shellExec('sh', ['-c', checkoutCmd], 15*60*1000)
@@ -193,6 +193,20 @@ async function gitCheckout (gco: GitCheckoutObject): Promise<GitCheckoutPaths> {
         utilPath
     }
     return checkoutPaths
+}
+
+function normalizeGitUriForCredential (initUri: String) : String {
+    let gitUriForCred = ''
+    const uriPartsOne = initUri.split('//')
+    if (uriPartsOne.length > 1) {
+        const uriPartsTwo = uriPartsOne[1].split('/')
+        gitUriForCred = uriPartsOne[0] + '//' + uriPartsTwo[0]
+    } else {
+        const uriPartsTwo = initUri.split('/')
+        gitUriForCred = uriPartsTwo[0]
+    }
+    gitUriForCred += '.username'
+    return gitUriForCred
 }
 
 async function generateSshKeyPair(): Promise<SshKeyPair> {

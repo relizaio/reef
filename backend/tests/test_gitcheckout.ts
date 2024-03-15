@@ -10,7 +10,8 @@ test('git checkout test', async (t) => {
         gitPointer: 'main',
         isPrivate: false,
         username: '',
-        token: ''
+        token: '',
+        privkey: ''
     }
     await utils.gitCheckout(gco)
     assert.strictEqual(1,1)

@@ -5,6 +5,7 @@ class GitCheckoutObject {
     isPrivate: boolean = false
     username : string = ''
     token: string = ''
+    privkey: string = ''
 }
 
 export { GitCheckoutObject }

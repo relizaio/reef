@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitAccountDao, GitSshAccountDao } from '../model/Account'
+import { AccountDao, AccountDto, AwsAccount, AwsAccountDao, AzureAccount, AzureAccountDao, GitAccount, GitSshAccount, GitAccountDao, GitSshAccountDao } from '../model/Account'
 import { AwsAccountInput, AzureAccountInput, GitAccountInput, GitSshAccountInput } from 'src/graphql'
 import { cipherDaoFromObject, cipherObjectFromDao } from '../model/CipherObject'
 import { runQuery, schema } from '../utils/pgUtils'
@@ -201,13 +201,30 @@ export class AccountService {
         }
         return ga
     }
+
+    async getGitSshAccount (accountId: string) : Promise<GitSshAccount | null> {
+        let ga : GitSshAccount | null = null
     
-    async getGitAccountFromSet(accountSet: string[]) : Promise<GitAccount | null> {
-        let ga : GitAccount | null = null
+        const queryText = `SELECT * FROM ${schema}.accounts where uuid = $1 and record_data->>'providerName' = $2`
+        const queryParams = [accountId, constants.GIT_SSH_ACCOUNT_PROVIDER]
+        const queryRes = await runQuery(queryText, queryParams)
+        if (queryRes.rows && queryRes.rows.length) {
+            const gaDao : GitSshAccountDao = queryRes.rows[0].record_data
+            ga = new GitSshAccount()
+            ga.username = await crypto.decrypt(cipherObjectFromDao(gaDao.username))
+            ga.privkey = await crypto.decrypt(cipherObjectFromDao(gaDao.privkey))
+            ga.repositoryVendor = gaDao.repositoryVendor
+        }
+        return ga
+    }
+    
+    async getGitAccountFromSet(accountSet: string[]) : Promise<GitAccount | GitSshAccount | null> {
+        let ga : GitAccount | GitSshAccount | null = null
         if (accountSet && accountSet.length) {
             let i = 0
             while (!ga && i < accountSet.length) {
                 ga = await this.getGitAccount(accountSet[i])
+                if (!ga) ga = await this.getGitSshAccount(accountSet[i])
                 ++i
             }
         }
