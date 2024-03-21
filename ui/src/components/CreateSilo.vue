@@ -46,7 +46,8 @@ export default {
 
         const silo = ref({
             templateId: '',
-            userVariables: []
+            userVariables: [],
+            description: ''
         })
 
         async function loadTemplates() {
