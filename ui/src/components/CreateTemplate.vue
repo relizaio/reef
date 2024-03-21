@@ -177,13 +177,14 @@ export default {
                         getAllActiveAccounts {
                             id
                             providerName
+                            description
                         }
                     }
                 `,
             })
             accounts.value = acctResponse.data.getAllActiveAccounts.map((a: any) => {
                 return {
-                    label: a.id + ' ' + a.providerName,
+                    label: a.description + ' - ' + a.providerName,
                     value: a.id
                 }
             })
