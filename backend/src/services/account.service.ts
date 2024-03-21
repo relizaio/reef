@@ -31,6 +31,7 @@ export class AccountService {
         const account : AccountDto = {
             id: dbRow.uuid,
             providerName: dbRow.record_data.providerName,
+            description: dbRow.record_data.description,
             pubkey: ''
         }
         return account
@@ -55,11 +56,13 @@ export class AccountService {
         aDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
         aDao.privkey = cipherDaoFromObject(await crypto.encrypt(keypair.privkey))
         aDao.pubkey = cipherDaoFromObject(await crypto.encrypt(keypair.pubkey))
+        aDao.description = ga.description
         const savedDao = await this.createGitSshAccountFromDao(aDao)
         const aDto: AccountDto = {
             id: savedDao.id,
             providerName: aDao.providerName,
-            pubkey: keypair.pubkey
+            pubkey: keypair.pubkey,
+            description: ga.description
         }
         return aDto
     }
@@ -107,12 +110,14 @@ export class AccountService {
         gaDao.repositoryVendor = ga.repositoryVendor
         gaDao.username = cipherDaoFromObject(await crypto.encrypt(ga.username))
         gaDao.token = cipherDaoFromObject(await crypto.encrypt(ga.token))
+        gaDao.description = ga.description
         return gaDao
     }
     
     async awsAccountDaoFromAwsAccountInput (aa: AwsAccountInput) : Promise<AwsAccountDao> {
         const aaDao = new AwsAccountDao()
         aaDao.region = aa.region
+        aaDao.description = aa.description
         aaDao.accessKey = cipherDaoFromObject(await crypto.encrypt(aa.accessKey))
         aaDao.secretKey = cipherDaoFromObject(await crypto.encrypt(aa.secretKey))
         return aaDao
@@ -121,6 +126,7 @@ export class AccountService {
     async azureAccountDaoFromAzureAccountInput (aa: AzureAccountInput) : Promise<AzureAccountDao> {
         const aaDao = new AzureAccountDao()
         aaDao.resourceGroupName = aa.resourceGroupName
+        aaDao.description = aa.description
         aaDao.clientId = cipherDaoFromObject(await crypto.encrypt(aa.clientId))
         aaDao.clientSecret = cipherDaoFromObject(await crypto.encrypt(aa.clientSecret))
         aaDao.subscriptionId = cipherDaoFromObject(await crypto.encrypt(aa.subscriptionId))

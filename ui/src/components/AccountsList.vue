@@ -43,12 +43,16 @@ export default {
 
         const accountFields: DataTableColumns<any> = [
             {
-                key: 'id',
-                title: 'id'
+                key: 'description',
+                title: 'Name'
             },
             {
                 key: 'providerName',
                 title: 'Provider'
+            },
+            {
+                key: 'id',
+                title: 'id'
             }
 
         ]
@@ -75,6 +79,7 @@ export default {
                         getAllActiveAccounts {
                             id
                             providerName
+                            description
                         }
                     }
                 `,

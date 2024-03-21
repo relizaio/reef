@@ -3,6 +3,7 @@ import { CipherDao } from "./CipherObject"
 
 class AccountProvider {
     providerName: string = 'Undefined'
+    description: string = ''
 }
 
 class AwsAccount extends AccountProvider {
@@ -85,6 +86,7 @@ class AccountDto {
     id : string = ''
     providerName: string = ''
     pubkey: string = ''
+    description: string = ''
 }
 
 export {

@@ -1,6 +1,7 @@
 <template>
     <div>
         <h4>Create Account</h4>
+        <label>Pick Account Type</label>
         <n-select
             v-model:value="selectedProviderType"
             required
@@ -8,6 +9,13 @@
         <n-form
             v-if="selectedProviderType === 'AWS'"
             :model="awsAccount">
+            <n-form-item
+                    path="description"
+                    label="Account Name">
+                <n-input
+                    placeholder="Enter Account Name (Optional)"
+                    v-model:value="awsAccount.description" />
+            </n-form-item>
             <n-form-item
                     path="accessKey"
                     label="Access Key">
@@ -34,6 +42,13 @@
         <n-form
             v-if="selectedProviderType === 'AZURE'"
             :model="azureAccount">
+            <n-form-item
+                    path="description"
+                    label="Account Name">
+                <n-input
+                    placeholder="Enter Account Name (Optional)"
+                    v-model:value="azureAccount.description" />
+            </n-form-item>
             <n-form-item
                     path="clientId"
                     label="Client ID">
@@ -68,6 +83,13 @@
             v-if="selectedProviderType === 'GIT'"
             :model="gitAccount">
             <n-form-item
+                    path="description"
+                    label="Account Name">
+                <n-input
+                    placeholder="Enter Account Name (Optional)"
+                    v-model:value="gitAccount.description" />
+            </n-form-item>
+            <n-form-item
                     path="username"
                     label="Username">
                 <n-input
@@ -87,6 +109,13 @@
         <n-form
             v-if="selectedProviderType === 'GITSSH'"
             :model="gitSshAccount">
+            <n-form-item
+                    path="description"
+                    label="Account Name">
+                <n-input
+                    placeholder="Enter Account Name (Optional)"
+                    v-model:value="gitSshAccount.description" />
+            </n-form-item>
             <n-form-item
                     path="username"
                     label="Username">
@@ -141,7 +170,8 @@ export default {
         const awsAccount = ref({
             accessKey: '',
             secretKey: '',
-            region: ''
+            region: '',
+            description: ''
         })
 
         const azureAccount = ref({
@@ -149,17 +179,20 @@ export default {
             clientSecret: '',
             resourceGroupName: '', // optional
             subscriptionId: '',
-            tenantId: ''
+            tenantId: '',
+            description: ''
         })
 
         const gitAccount = ref({
             token: '',
             username: '',
-            repositoryVendor: ''
+            repositoryVendor: '',
+            description: ''
         })
 
         const gitSshAccount = ref({
-            username: ''
+            username: '',
+            description: ''
         })
 
         async function createAccountWrapper (accountType: AccountType) {
