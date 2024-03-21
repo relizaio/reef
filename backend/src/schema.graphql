@@ -12,10 +12,10 @@
     }
 
     type Mutation {
-        createSilo(templateId: ID!, userVariables: [KeyValueInput]): Silo,
+        createSilo(templateId: ID!, userVariables: [KeyValueInput], description: String): Silo,
         updateSilo(siloId: ID!, templateIds: [ID]): Silo,
         destroySilo(siloId: ID!): Boolean,
-        createInstance(siloId: ID!, templateId: ID!, instanceId: ID, userVariables: [KeyValueInput]): Instance,
+        createInstance(siloId: ID!, templateId: ID!, instanceId: ID, userVariables: [KeyValueInput], description: String): Instance,
         destroyInstance(instanceId: ID!): Boolean,
         createTemplate(templateInput: TemplateInput!): Template,
         createAwsAccount(awsAccount: AwsAccountInput!): Account,
@@ -41,6 +41,7 @@
         region: String!
         accessKey: String!
         secretKey: String!
+        description: String
     }
 
     input AzureAccountInput {
@@ -49,17 +50,20 @@
         clientSecret: String!
         tenantId: String!
         resourceGroupName: String
+        description: String
     }
     
     input GitAccountInput {
         username: String!
         token: String!
         repositoryVendor: String
+        description: String
     }
 
     input GitSshAccountInput {
         username: String!
         repositoryVendor: String
+        description: String
     }
     
     input TemplateInput {
@@ -70,6 +74,7 @@
         providers: [ProviderType]
         authAccounts: [ID]
         parentTemplates: [ID]
+        description: String
     }
     
     input KeyValueInput {
@@ -81,6 +86,7 @@
         id: ID
         providerName: String
         pubkey: String
+        description: String
     }
     
     type Silo {
@@ -88,12 +94,14 @@
         status: String
         template: Template
         properties: [KeyValue]
+        description: String
     }
     
     type Instance {
         id: ID!
         status: String
         properties: [KeyValue]
+        description: String
     }
     
     type KeyValue {
@@ -105,6 +113,7 @@
         id: ID!
         status: String
         recordData: TemplateData
+        description: String
     }
 
     type TemplateData {

@@ -25,6 +25,7 @@ export class AwsAccountInput {
     region: string;
     accessKey: string;
     secretKey: string;
+    description?: Nullable<string>;
 }
 
 export class AzureAccountInput {
@@ -33,17 +34,20 @@ export class AzureAccountInput {
     clientSecret: string;
     tenantId: string;
     resourceGroupName?: Nullable<string>;
+    description?: Nullable<string>;
 }
 
 export class GitAccountInput {
     username: string;
     token: string;
     repositoryVendor?: Nullable<string>;
+    description?: Nullable<string>;
 }
 
 export class GitSshAccountInput {
     username: string;
     repositoryVendor?: Nullable<string>;
+    description?: Nullable<string>;
 }
 
 export class TemplateInput {
@@ -54,6 +58,7 @@ export class TemplateInput {
     providers?: Nullable<Nullable<ProviderType>[]>;
     authAccounts?: Nullable<Nullable<string>[]>;
     parentTemplates?: Nullable<Nullable<string>[]>;
+    description?: Nullable<string>;
 }
 
 export class KeyValueInput {
@@ -84,13 +89,13 @@ export abstract class IQuery {
 }
 
 export abstract class IMutation {
-    abstract createSilo(templateId: string, userVariables?: Nullable<Nullable<KeyValueInput>[]>): Nullable<Silo> | Promise<Nullable<Silo>>;
+    abstract createSilo(templateId: string, userVariables?: Nullable<Nullable<KeyValueInput>[]>, description?: Nullable<string>): Nullable<Silo> | Promise<Nullable<Silo>>;
 
     abstract updateSilo(siloId: string, templateIds?: Nullable<Nullable<string>[]>): Nullable<Silo> | Promise<Nullable<Silo>>;
 
     abstract destroySilo(siloId: string): Nullable<boolean> | Promise<Nullable<boolean>>;
 
-    abstract createInstance(siloId: string, templateId: string, instanceId?: Nullable<string>, userVariables?: Nullable<Nullable<KeyValueInput>[]>): Nullable<Instance> | Promise<Nullable<Instance>>;
+    abstract createInstance(siloId: string, templateId: string, instanceId?: Nullable<string>, userVariables?: Nullable<Nullable<KeyValueInput>[]>, description?: Nullable<string>): Nullable<Instance> | Promise<Nullable<Instance>>;
 
     abstract destroyInstance(instanceId: string): Nullable<boolean> | Promise<Nullable<boolean>>;
 
@@ -108,6 +113,8 @@ export abstract class IMutation {
 export class Account {
     id?: Nullable<string>;
     providerName?: Nullable<string>;
+    pubkey?: Nullable<string>;
+    description?: Nullable<string>;
 }
 
 export class Silo {
@@ -115,12 +122,14 @@ export class Silo {
     status?: Nullable<string>;
     template?: Nullable<Template>;
     properties?: Nullable<Nullable<KeyValue>[]>;
+    description?: Nullable<string>;
 }
 
 export class Instance {
     id: string;
     status?: Nullable<string>;
     properties?: Nullable<Nullable<KeyValue>[]>;
+    description?: Nullable<string>;
 }
 
 export class KeyValue {
@@ -132,6 +141,7 @@ export class Template {
     id: string;
     status?: Nullable<string>;
     recordData?: Nullable<TemplateData>;
+    description?: Nullable<string>;
 }
 
 export class TemplateData {

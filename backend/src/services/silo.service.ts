@@ -20,16 +20,16 @@ export class SiloService {
 
     async saveToDb (silo: Silo) {
         const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
-        const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, template_pointer, properties) values ($1, $2, $3, $4, $5) RETURNING *`
-        const queryParams = [siloUuidForDb, silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties)]
+        const queryText = `INSERT INTO ${schema}.silos (uuid, status, template_id, template_pointer, properties, description) values ($1, $2, $3, $4, $5, $6) RETURNING *`
+        const queryParams = [siloUuidForDb, silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties), silo.description]
         const queryRes = await runQuery(queryText, queryParams)
         return queryRes.rows[0]
     }
     
     async updateSiloDbRecord (silo: Silo): Promise<Silo> {
         const siloUuidForDb = silo.id.replace(constants.SILO_PREFIX, '')
-        const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, template_pointer = $3, properties = $4 where uuid = $5 RETURNING *`
-        const queryParams = [silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties), siloUuidForDb]
+        const queryText = `UPDATE ${schema}.silos SET status = $1, template_id = $2, template_pointer = $3, properties = $4, description = $5 where uuid = $6 RETURNING *`
+        const queryParams = [silo.status, silo.template_id, silo.template_pointer, JSON.stringify(silo.properties), silo.description, siloUuidForDb]
         const queryRes = await runQuery(queryText, queryParams)
         return queryRes.rows[0]
     }
@@ -49,7 +49,8 @@ export class SiloService {
             template_id: dbRow.template_id,
             template_pointer: dbRow.template_pointer,
             properties: dbRow.properties,
-            instance_templates: dbRow.instance_templates
+            instance_templates: dbRow.instance_templates,
+            description: dbRow.description
         }
         return silo
     }
@@ -68,7 +69,7 @@ export class SiloService {
         return queryRes.rows.map((r: any) => this.transformDbRowToSilo(r))
     }
     
-    async createSilo (templateId: string, userVariables: KeyValueInput[]) : Promise<Silo | null> {
+    async createSilo (templateId: string, userVariables: KeyValueInput[], description: string) : Promise<Silo | null> {
         const siloId = constants.SILO_PREFIX + utils.uuidv4()
         const template = await this.templateService.getTemplate(templateId)
         const gco = await this.templateService.gitCheckoutObjectFromTemplate(template)
@@ -78,7 +79,7 @@ export class SiloService {
         await utils.deleteDir(siloSourcePaths.checkoutPath)
         if (siloSourcePaths.utilPath) await utils.deleteDir(siloSourcePaths.utilPath)
         let initSiloEnvVarCmd = ''
-        const respSilo = await this.createPendingSiloInDb(siloId, templateId, templatePointer)
+        const respSilo = await this.createPendingSiloInDb(siloId, templateId, templatePointer, description)
         if (template.recordData.providers.includes(ProviderType.AZURE)) {
             const azureAct = await this.accountService.getAzureAccountFromSet(template.recordData.authAccounts)
             if (azureAct) {
@@ -95,18 +96,19 @@ export class SiloService {
                 console.error('missing aws account for template = ' + template.id)
             }
         }
-        this.createSiloTfRoutine(siloId, template.id, templatePointer, initSiloEnvVarCmd, userVariables)
+        this.createSiloTfRoutine(siloId, template.id, templatePointer, initSiloEnvVarCmd, userVariables, description)
         return respSilo
     }
     
-    async createPendingSiloInDb(siloId: string, templateId: string, templatePointer: string) {
+    async createPendingSiloInDb(siloId: string, templateId: string, templatePointer: string, description: string) {
         const pendingSilo : Silo = {
             id: siloId,
             status: constants.STATUS_PENDING,
             template_id: templateId,
             template_pointer: templatePointer,
             properties: [],
-            instance_templates: []
+            instance_templates: [],
+            description
         }
         await this.saveToDb(pendingSilo)
         return pendingSilo
@@ -118,7 +120,7 @@ export class SiloService {
         await this.updateSiloDbRecord(silo)
     }
     
-    async createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: KeyValueInput[]) {
+    async createSiloTfRoutine (siloId: string, templateId: string, templatePointer: string, envVarCmd: string, userVariables: KeyValueInput[], description: string) {
         try {
             const startTime = (new Date()).getTime()
             const siloTfVarsObj: any = {
@@ -157,7 +159,8 @@ export class SiloService {
                 template_id: templateId,
                 template_pointer: templatePointer,
                 properties: outSiloProps,
-                instance_templates: []
+                instance_templates: [],
+                description
             }
             await this.updateSiloDbRecord(outSilo)
             const allDoneTime = (new Date()).getTime()

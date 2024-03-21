@@ -8,6 +8,7 @@ class Silo {
     template_pointer: string = '' // git commit hash
     properties : Property[] = []
     instance_templates : string[] = []
+    description: string = ''
 }
 
 

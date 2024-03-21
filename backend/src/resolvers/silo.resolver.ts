@@ -21,8 +21,8 @@ export class SiloResolver {
     }
 
     @Mutation()
-    async createSilo(@Args('templateId') templateId: string, @Args('userVariables') userVariables: KeyValueInput[]) {
-        return await this.siloService.createSilo(templateId, userVariables)
+    async createSilo(@Args('templateId') templateId: string, @Args('userVariables') userVariables: KeyValueInput[], @Args('description') description: string) {
+        return await this.siloService.createSilo(templateId, userVariables, description)
     }
 
     @Mutation()
