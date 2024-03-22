@@ -3,6 +3,13 @@
         <h4>Create Instance</h4>
         <n-form :model="instance">
             <n-form-item
+                    path="description"
+                    label="Instance Name">
+                <n-input
+                    placeholder="Enter Instance Name (Optional)"
+                    v-model:value="instance.description" />
+            </n-form-item>
+            <n-form-item
                     path="typsiloIde"
                     label="Silo">
                 <n-select
@@ -37,7 +44,7 @@
 
 <script lang="ts">
 import { ref, Ref } from 'vue'
-import { NButton, NDynamicInput, NForm, NFormItem, NSelect } from 'naive-ui'
+import { NButton, NDynamicInput, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
 import Swal from 'sweetalert2'
@@ -46,7 +53,7 @@ import commonFunctions from '../utils/commonFunctions'
 export default {
     name: 'CreateInstance',
     components: {
-        NButton, NDynamicInput, NForm, NFormItem, NSelect
+        NButton, NDynamicInput, NForm, NFormItem, NInput, NSelect
     },
     props: {
     },
@@ -62,7 +69,8 @@ export default {
         const instance = ref({
             templateId: '',
             siloId: '',
-            userVariables: initUserVars
+            userVariables: initUserVars,
+            description: ''
         })
 
         async function loadTemplates() {
@@ -79,6 +87,7 @@ export default {
                                 repoPointer
                                 providers
                                 parentTemplates
+                                description
                             }
                         }
                     }
@@ -103,6 +112,7 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
+                                description
                                 userVariables {
                                     key
                                     value
@@ -128,7 +138,7 @@ export default {
                     })
                     .map((t: any) => {
                         return {
-                            label: t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
+                            label: t.recordData.description + ' - ' + t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
                             value: t.id
                         }
                     })
@@ -151,8 +161,8 @@ export default {
                 await graphqlClient
                     .mutate({
                         mutation: gql`
-                            mutation CreateInstance($siloId: ID!, $templateId: ID!, $userVariables: [KeyValueInput]) {
-                                createInstance(siloId: $siloId, templateId: $templateId, userVariables: $userVariables) {
+                            mutation CreateInstance($siloId: ID!, $templateId: ID!, $userVariables: [KeyValueInput], $description: String) {
+                                createInstance(siloId: $siloId, templateId: $templateId, userVariables: $userVariables, description: $description) {
                                     id
                                 }
                             }`,
@@ -180,6 +190,7 @@ export default {
                                     type
                                     providers
                                     parentTemplates
+                                    description
                                 }
                             }
                             properties {
@@ -192,7 +203,7 @@ export default {
             silos.value = silosResponse.data.getAllActiveSilos
             silosForSelection.value = silosResponse.data.getAllActiveSilos.map((s: any) => {
                 return {
-                    label: s.id + " " + s.template.recordData.providers,
+                    label: s.template.recordData.description + " - " + s.template.recordData.providers,
                     value: s.id
                 }
             })
