@@ -163,7 +163,7 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
-                                descritpion
+                                description
                             }
                         }
                     }
@@ -173,7 +173,7 @@ export default {
                 .filter((t: any) => t.status === 'ACTIVE' && t.recordData.type === 'SILO')
                 .map((t: any) => {
                     return {
-                        label: t.description + ' ' + t.recordData.providers + ' ' + t.recordData.type,
+                        label: t.recordData.description + ' - ' + t.recordData.providers + ' - ' + t.recordData.type,
                         value: t.id
                     }
                 })
