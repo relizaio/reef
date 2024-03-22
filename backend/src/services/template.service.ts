@@ -63,6 +63,7 @@ export class TemplateService {
         template.recordData.repoPointer = templateInput.repoPointer
         template.recordData.repoUrl = templateInput.repoUrl
         template.recordData.type = templateInput.type
+        template.recordData.description = templateInput.description
         template.recordData.providers = templateInput.providers
         template.recordData.authAccounts = templateInput.authAccounts
         template.recordData.parentTemplates = templateInput.parentTemplates

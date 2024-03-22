@@ -113,7 +113,6 @@
         id: ID!
         status: String
         recordData: TemplateData
-        description: String
     }
 
     type TemplateData {
@@ -125,4 +124,5 @@
         authAccounts: [ID]
         parentTemplates: [ID]
         userVariables: [KeyValue]
+        description: String
     }

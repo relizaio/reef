@@ -2,6 +2,7 @@ import constants from '../utils/constants'
 
 class TemplateData {
     type: TemplateType = TemplateType.UNDEFINED
+    description: string = ''
     repoUrl: string = ''
     repoPath: string = ''
     repoPointer: string = '' // this can be git branch, git tag, git hash

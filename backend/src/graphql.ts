@@ -141,7 +141,6 @@ export class Template {
     id: string;
     status?: Nullable<string>;
     recordData?: Nullable<TemplateData>;
-    description?: Nullable<string>;
 }
 
 export class TemplateData {
@@ -153,6 +152,7 @@ export class TemplateData {
     authAccounts?: Nullable<Nullable<string>[]>;
     parentTemplates?: Nullable<Nullable<string>[]>;
     userVariables?: Nullable<Nullable<KeyValue>[]>;
+    description?: Nullable<string>;
 }
 
 type Nullable<T> = T | null;
