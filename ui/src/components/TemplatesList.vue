@@ -46,6 +46,13 @@ export default {
 
         const templateFields: DataTableColumns<any> = [
             {
+                key: 'description',
+                title: 'Name',
+                render: (row: any) => {
+                    return row.recordData.description
+                }
+            },
+            {
                 key: 'repoUrl',
                 title: 'Git Repository',
                 render: (row: any) => {
@@ -104,6 +111,7 @@ export default {
                             status
                             recordData {
                                 type
+                                description
                                 repoUrl
                                 repoPath
                                 repoPointer

@@ -12,6 +12,13 @@
                     :options="types" />
             </n-form-item>
             <n-form-item
+                    path="description"
+                    label="Template Name">
+                <n-input
+                    placeholder="Enter Template Name (Optional)"
+                    v-model:value="template.description" />
+            </n-form-item>
+            <n-form-item
                     path="repoUrl"
                     label="Git Repo URL">
                 <n-input
@@ -90,7 +97,8 @@ export default {
             repoPointer: '',
             authAccounts: [],
             providers: [],
-            parentTemplates: []
+            parentTemplates: [],
+            description: ''
         })
         const types = [
             {
@@ -155,6 +163,7 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
+                                descritpion
                             }
                         }
                     }
@@ -164,7 +173,7 @@ export default {
                 .filter((t: any) => t.status === 'ACTIVE' && t.recordData.type === 'SILO')
                 .map((t: any) => {
                     return {
-                        label: t.id + ' ' + t.recordData.providers + ' ' + t.recordData.type,
+                        label: t.description + ' ' + t.recordData.providers + ' ' + t.recordData.type,
                         value: t.id
                     }
                 })
