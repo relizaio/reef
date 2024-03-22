@@ -49,7 +49,8 @@ export class InstanceService {
             template_id: dbRow.template_id,
             template_pointer: dbRow.template_pointer,
             silo_id: dbRow.silo_id,
-            properties: dbRow.properties
+            properties: dbRow.properties,
+            description: dbRow.description
         }
         return instance
     }
@@ -57,8 +58,8 @@ export class InstanceService {
     async saveToDb (instance: Instance) {
         const instanceUuidForDb = instance.id.replace(constants.INSTANCE_PREFIX, '')
         const siloUuidForDb = instance.silo_id.replace(constants.SILO_PREFIX, '')
-        const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, template_id, template_pointer, properties) values ($1, $2, $3, $4, $5, $6) RETURNING *`
-        const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, instance.template_id, instance.template_pointer, JSON.stringify(instance.properties)]
+        const queryText = `INSERT INTO ${schema}.instances (uuid, status, silo_id, template_id, template_pointer, description, properties) values ($1, $2, $3, $4, $5, $6, $7) RETURNING *`
+        const queryParams = [instanceUuidForDb, instance.status, siloUuidForDb, instance.template_id, instance.template_pointer, instance.description, JSON.stringify(instance.properties)]
         const queryRes = await runQuery(queryText, queryParams)
         return queryRes.rows[0]
     }
@@ -79,7 +80,7 @@ export class InstanceService {
         return queryRes.rows[0]
     }
     
-    async createInstance (siloId: string, templateId: string, instanceId?: string, userVariables?: KeyValueInput[]) : Promise<Instance | null> {
+    async createInstance (siloId: string, templateId: string, instanceId?: string, description?: string, userVariables?: KeyValueInput[]) : Promise<Instance | null> {
         const siloEntity = await this.siloService.getSilo(siloId)
     
         const instanceTemplate = await this.templateService.getTemplate(templateId)
@@ -119,7 +120,7 @@ export class InstanceService {
         utils.saveJsonToFile(instanceTfVarsFile, tfVarsObject)
         console.log(`Creating ${instanceId} instance in ${siloId} silo...`)
         let initInstEnvVarCmd = ''
-        const respInstance = await this.createPendingInstanceInDb(instanceId, siloId, templateId, templatePointer)
+        const respInstance = await this.createPendingInstanceInDb(instanceId, siloId, templateId, templatePointer, description)
         if (instanceTemplate.recordData.providers.includes(ProviderType.AZURE)) {
             const azureAct = await this.accountService.getAzureAccountFromSet(instanceTemplate.recordData.authAccounts)
             if (azureAct) {
@@ -136,24 +137,25 @@ export class InstanceService {
                 console.error('missing aws account for template = ' + templateId)
             }
         }
-        this.createInstanceTfRoutine(instanceId, siloId, initInstEnvVarCmd, templateId, templatePointer)
+        this.createInstanceTfRoutine(instanceId, siloId, initInstEnvVarCmd, templateId, templatePointer, description)
         return respInstance
     }
     
-    async createPendingInstanceInDb(instanceId: string, siloId: string, templateId: string, templatePointer: string) {
+    async createPendingInstanceInDb(instanceId: string, siloId: string, templateId: string, templatePointer: string, description: string) {
         const pendingInstance : Instance = {
             id: instanceId,
             status: constants.STATUS_PENDING,
             silo_id: siloId,
             template_id: templateId,
             template_pointer: templatePointer,
-            properties: []
+            properties: [],
+            description
         }
         await this.saveToDb(pendingInstance)
         return pendingInstance
     }
     
-    async createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string, templatePointer: string) {
+    async createInstanceTfRoutine (instanceId: string, siloId: string, envVarCmd: string, templateId: string, templatePointer: string, description: string) {
         try {
             const startTime = (new Date()).getTime()
             const fname = utils.constructTfPipeOutFileName(constants.CREATE_OPERATION)
@@ -177,7 +179,8 @@ export class InstanceService {
                 silo_id: siloId,
                 template_id: templateId,
                 template_pointer: templatePointer,
-                properties: outInstanceProps
+                properties: outInstanceProps,
+                description
             }
             this.updateInstanceInDb(outInstance)
             const allDoneTime = (new Date()).getTime()

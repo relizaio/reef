@@ -24,8 +24,8 @@ export class InstanceResolver {
     }
 
     @Mutation()
-    async createInstance(@Args('siloId') siloId: string, @Args('templateId') templateId: string, @Args('instanceId') instanceId?: string, @Args('userVariables') userVariables?: KeyValueInput[]) {
-        return await this.instanceService.createInstance(siloId, templateId, instanceId, userVariables)
+    async createInstance(@Args('siloId') siloId: string, @Args('templateId') templateId: string, @Args('instanceId') instanceId?: string, @Args('description') description?: string, @Args('userVariables') userVariables?: KeyValueInput[]) {
+        return await this.instanceService.createInstance(siloId, templateId, instanceId, description, userVariables)
     }
 
     @Mutation()
