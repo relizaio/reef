@@ -44,12 +44,16 @@ export default {
 
         const siloFields: DataTableColumns<any> = [
             {
-                key: 'id',
-                title: 'Id'
+                key: 'description',
+                title: 'Name'
             },
             {
                 key: 'status',
                 title: 'Status'
+            },
+            {
+                key: 'id',
+                title: 'Id'
             },
             {
                 key: 'controls',
@@ -89,13 +93,13 @@ export default {
                         getAllActiveSilos {
                             id
                             status
+                            description
                         }
                     }
                 `,
                 fetchPolicy: 'no-cache'
             })
             silos.value = silosResponse.data.getAllActiveSilos
-            console.log(silos.value)
         }
 
         async function destroySilo (siloId: string) {

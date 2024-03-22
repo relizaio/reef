@@ -2,6 +2,10 @@
     <div>
         <h4>Create Silo</h4>
         <n-form>
+            <label>Silo Name</label>
+            <n-input
+                placeholder="Enter Silo Name (Optional)"
+                v-model:value="silo.description" />
             <label>Select Template</label>
             <n-select
                 v-model:value="silo.templateId"
@@ -25,7 +29,7 @@
 
 <script lang="ts">
 import { ref, Ref } from 'vue'
-import { NButton, NDynamicInput, NForm, NSelect } from 'naive-ui'
+import { NButton, NDynamicInput, NForm, NInput, NSelect } from 'naive-ui'
 import gql from 'graphql-tag'
 import graphqlClient from '../utils/graphql'
 import Swal from 'sweetalert2'
@@ -34,7 +38,7 @@ import commonFunctions from '../utils/commonFunctions'
 export default {
     name: 'CreateSilo',
     components: {
-        NButton, NDynamicInput, NForm, NSelect
+        NButton, NDynamicInput, NForm, NInput, NSelect
     },
     props: {
     },
@@ -63,6 +67,7 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
+                                description
                             }
                         }
                     }
@@ -76,7 +81,7 @@ export default {
                 .filter((t: any) => t.recordData.type === 'SILO')
                 .map((t: any) => {
                     return {
-                        label: t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
+                        label: t.recordData.description + ' - ' + t.recordData.providers + ' - ' + t.recordData.repoUrl + ' - ' + t.recordData.repoPath + ' - ' + t.recordData.repoPointer,
                         value: t.id
                     }
             })
@@ -95,6 +100,7 @@ export default {
                                 repoPath
                                 repoPointer
                                 providers
+                                description
                                 userVariables {
                                     key
                                     value
@@ -120,8 +126,8 @@ export default {
                 await graphqlClient
                     .mutate({
                         mutation: gql`
-                            mutation CreateSilo($templateId: ID!, $userVariables: [KeyValueInput]) {
-                                createSilo(templateId: $templateId, userVariables: $userVariables) {
+                            mutation CreateSilo($templateId: ID!, $userVariables: [KeyValueInput], $description: String) {
+                                createSilo(templateId: $templateId, userVariables: $userVariables, description: $description) {
                                     id
                                 }
                             }`,
