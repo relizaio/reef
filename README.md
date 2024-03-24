@@ -1,5 +1,7 @@
 *N.B. This is an early stage of project to create arbitrarily ephemeral environments with terraform*
 
+*Project Introduction - https://worklifenotes.com/2024/03/23/reef-2-layered-approach-for-ephemeral/*
+
 *If you would like to know more about the project and / or participate in it, contact us via [DevOps and DataOps Discord](https://devopscommunity.org)*
 
 ## Running the stack
@@ -17,12 +19,12 @@ cd docker-compose/local
 docker-compose up -d
 ```
 
-When running with docker-compose point, open http://localhost:8112 in the browser to access UI.
+When running with docker-compose, open http://localhost:8112 in the browser to access UI.
 
 ## Tutorial - spin Silo and Instance on Azure (requires paid or trial Azure subscription, you may incur Azure charges)
 Pre-requisites - create a resource group in Azure with valid DNS zone in such group - you need to have a valid DNZ zone for templates in this tutorial to operate properly.
 
-1. Run the stack as described above
+1. Run the stack via docker-compose as described above
 2. In the UI, navigate to the Accounts menu
 3. Click on the plus icon to Create Account
 4. In the dropdown, choose Azure
