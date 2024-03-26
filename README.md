@@ -22,7 +22,7 @@ docker-compose up -d
 When running with docker-compose, open http://localhost:8112 in the browser to access UI.
 
 ## Tutorial - spin Silo and Instance on Azure (requires paid or trial Azure subscription, you may incur Azure charges)
-Pre-requisites - create a resource group in Azure with valid DNS zone in such group - you need to have a valid DNZ zone for templates in this tutorial to operate properly.
+Pre-requisites - create a resource group in Azure with valid DNS zone in such group - you need to have a valid DNS zone for templates in this tutorial to operate properly.
 
 1. Run the stack via docker-compose as described above
 2. In the UI, navigate to the Accounts menu
