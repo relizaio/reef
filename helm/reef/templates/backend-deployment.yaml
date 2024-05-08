@@ -36,6 +36,9 @@ spec:
               key: password
         ports:
         - containerPort: 4001
+        volumeMounts:
+        - mountPath: /app/tf_space
+          name: reef-data
       initContainers:
       - name: reef-backend-init
         image: {{ .Values.backend.image }}
@@ -62,3 +65,20 @@ spec:
       volumes:
         - name: migrations-sql
           emptyDir: {}
+        - name: reef-data
+          persistentVolumeClaim:
+            claimName: reef-backend-data
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: reef-backend-data
+spec:
+  accessModes:
+  - {{ .Values.backend.storageAccessMode }}
+  storageClassName: {{ .Values.backend.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.backend.storage }}

@@ -1,6 +1,9 @@
 backend:
   image: registry.relizahub.com/library/reef-backend
   replicaCount: 1
+  storage: 2Gi
+  storageClassName: local-path
+  storageAccessMode: ReadWriteOnce
 frontend:
   image: registry.relizahub.com/library/reef-ui
   replicaCount: 1
